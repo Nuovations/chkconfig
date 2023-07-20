@@ -1,0 +1,69 @@
+#
+#    Copyright (c) 2017-2022 Grant Erickson. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+
+#
+#    Description:
+#      This file is the GitHub Actions hosted, distributed continuous 
+#      integration configuration file for cstyle, a program used to
+#      flexibly and parametrically check for code formatting style
+#      compliance.
+#
+
+---
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+
+  linux:
+    runs-on: ubuntu-latest
+    name: "Linux"
+
+    steps:
+
+    - name: Install Common Host Package Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install gobjc++
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        make
+
+    - name: Test
+      run: |
+        make check
+
+  macos:
+    runs-on: macos-latest
+    name: "macOS"
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        make
+
+    - name: Test
+      run: |
+        make check
