@@ -200,12 +200,13 @@ static const char * const  sLongUsageString  =
 " Check / Get / List Options:\n"
 "\n"
 "  -d, --use-default-directory  Include the default directory as a fallback.\n"
-"  -s, --state                  Print the state of every configuration flag, sorting by state.\n"
+"  -s, --state                  Print the state of every configuration flag,\n"
+"                               sorting by state.\n"
 "\n"
 " Set Options:\n"
 "\n"
-"  -f, --force                  Forcibly create the specified flag state file if it\n"
-"                               does not exist.\n"
+"  -f, --force                  Forcibly create the specified flag state file\n"
+"                               if it does not exist.\n"
 "\n";
 
 static const char *        sDefaultDirectory = CHKCONFIG_DEFAULTDIR_DEFAULT;
