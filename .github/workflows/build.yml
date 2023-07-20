@@ -28,61 +28,87 @@ jobs:
 
   linux:
     runs-on: ubuntu-latest
-    name: "Linux ${{matrix.compiler['name']}}"
+    name: "Linux ${{matrix.compiler['name']}} [${{matrix.configuration['name']}}]"
+
     strategy:
       matrix:
         compiler:
-          - { name: GCC,        c: gcc,   cxx: g++ }
+          - { name: GCC,        c: gcc,   cxx: g++,     options: "" }
+          - { name: clang/LLVM, c: clang, cxx: clang++, options: "" }
+        configuration:
+          - { name: "Debug",   options: "--enable-debug" }
+          - { name: "Release", options: "" }
     env:
       CC: ${{matrix.compiler['c']}}
       CXX: ${{matrix.compiler['cxx']}}
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Install Dependencies
+
+    - name: Install Common Host Package Dependencies
       run: |
         sudo apt-get update
         sudo apt-get -y install autoconf automake libtool
+
+    - name: Install chkconfig Package Dependencies
+      run: |
+        sudo apt-get -y install asciidoc xmlto doxygen
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - name: Bootstrap and Configure
       run: |
-        ./bootstrap-configure -C --prefix=/
+        ./bootstrap-configure -C ${{matrix.configuration['options']}} --prefix=/
+
     - name: Coding Style
       run: |
         make -j pretty-check
+
     - name: Build
       run: |
         make -j
+
     - name: Test
       run: |
         make -j check
 
   macos:
     runs-on: macos-10.15
-    name: "macOS ${{matrix.compiler['name']}}"
+    name: "macOS ${{matrix.compiler['name']}} [${{matrix.configuration['name']}}]"
     strategy:
       matrix:
         compiler:
           - { name: GCC,        c: gcc,   cxx: g++ }
           - { name: clang/LLVM, c: clang, cxx: clang++ }
+        configuration:
+          - { name: "Debug",   options: "--enable-debug" }
+          - { name: "Release", options: "" }
     env:
       CC: ${{matrix.compiler['c']}}
       CXX: ${{matrix.compiler['cxx']}}
+      XML_CATALOG_FILES: /usr/local/etc/xml/catalog
     steps:
+
     - name: Checkout
       uses: actions/checkout@v2
+
     - name: Install Dependencies
       run: |
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install autoconf automake libtool doxygen
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install autoconf automake libtool asciidoc xmlto doxygen
+
     - name: Bootstrap and Configure
       run: |
         export PATH="$(brew --prefix m4)/bin:${PATH}"
-        ./bootstrap-configure -C --prefix=/
+        ./bootstrap-configure -C ${{matrix.configuration['options']}} --prefix=/
+
     - name: Coding Style
       run: |
         make -j pretty-check
+
     - name: Build
       run: |
         make -j
+
     - name: Test
       run: |
         make -j check
