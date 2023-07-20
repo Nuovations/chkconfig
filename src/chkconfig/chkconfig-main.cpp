@@ -420,7 +420,7 @@ static void ProcessArguments(
 
             inArgumentCount -= inArgumentCount;
             inArgumentArray += inArgumentCount;
-            outConsumed     += inArgumentCount;
+            outConsumed     += static_cast<size_t>(inArgumentCount);
         }
         break;
 
