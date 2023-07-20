@@ -154,34 +154,36 @@ $(distdir)/.dist-version: $(builddir)/.local-version force
 $(distdir)/.dist-version $(builddir)/.local-version:
 	$(call check-file,$(@F))
 
-# If you are synchronizing a package on which yours depends using 'repos.conf',
-# to 'third_party', uncomment and adapt or delete this, as needed. If you choose
-# to use this, please also take a look at Makefile.am and third_party/Makefile.am
-# and uncomment the appropriate sections there.
+# If you are synchronizing a package on which yours depends using
+# 'repos.conf', to 'third_party', uncomment and adapt or delete this,
+# as needed. If you choose to use this, please also take a look at
+# Makefile.am and third_party/Makefile.am and uncomment the
+# appropriate sections there.
 
-# #
-# # When we run 'distcheck' and --with-nlunit_test defaults to 'internal',
-# # the nlbuild-autotools infrastructure will attempt to create git paths
-# # to manage the nlunit-test repo. Two directories need to be writable
-# # to facilitate this.
-# #
-# DISTCHECK_CONFIGURE_FLAGS=`chmod u+w .. ../third_party`
+#
+# When we run 'distcheck' and --with-nlunit_test defaults to 'internal',
+# the nlbuild-autotools infrastructure will attempt to create git paths
+# to manage the nlunit-test repo. Two directories need to be writable
+# to facilitate this.
+#
+DISTCHECK_CONFIGURE_FLAGS=`chmod u+w .. ../third_party`
 
 dist distcheck distdir install-headers: $(BUILT_SOURCES)
 
 dist-hook: $(distdir)/.dist-version
 
-# If you are synchronizing a package on which yours depends using 'repos.conf',
-# to 'third_party', uncomment and adapt or delete this, as needed. If you choose
-# to use this, please also take a look at Makefile.am and third_party/Makefile.am
-# and uncomment the appropriate sections there.
+# If you are synchronizing a package on which yours depends using
+# 'repos.conf', to 'third_party', uncomment and adapt or delete this,
+# as needed. If you choose to use this, please also take a look at
+# Makefile.am and third_party/Makefile.am and uncomment the
+# appropriate sections there.
 
-# #
-# # Ensure any locally synchronized repositories defined by 'repos.conf'
-# # are cleaned up.
-# #
-# distclean-local:
-# 	$(MAKE) -C $(srcdir) -f Makefile-bootstrap clean-repos
+#
+# Ensure any locally synchronized repositories defined by 'repos.conf'
+# are cleaned up.
+#
+distclean-local:
+	$(MAKE) -C $(srcdir) -f Makefile-bootstrap clean-repos
 
 #
 # Top-level convenience target for making a documentation-only
