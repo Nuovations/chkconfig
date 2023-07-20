@@ -521,7 +521,7 @@ static chkconfig_status_t ListOne(const chkconfig_flag_state_tuple_t &inFlagStat
 static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
 {
     chkconfig_flag_state_tuple_t *       lFlagStateTuples = nullptr;
-    size_t                               lFlagStateTuplesCount;    
+    size_t                               lFlagStateTuplesCount;
     const chkconfig_flag_state_tuple_t * lFirst;
     const chkconfig_flag_state_tuple_t * lLast;
     const chkconfig_flag_state_tuple_t * lCurrent;

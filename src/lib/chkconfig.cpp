@@ -264,8 +264,8 @@ static chkconfig_status_t chkconfigOptionsDestroy(chkconfig_context_t &inContext
         free(const_cast<char *>(inOptionsPointer->m_default_dir));
         inOptionsPointer->m_default_dir = nullptr;
     }
-        
-    /// Destroy the options data itself.
+
+    // Destroy the options data itself.
 
     delete inOptionsPointer;
 

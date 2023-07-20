@@ -227,7 +227,7 @@ typedef enum {
      *  directory.
      *
      */
-    CHKCONFIG_OPTION_DEFAULT_DIRECTORY      = _CHKCONFIG_OPTION_ENCODE(_CHKCONFIG_OPTION_TYPE_CSTRING, 3), 
+    CHKCONFIG_OPTION_DEFAULT_DIRECTORY      = _CHKCONFIG_OPTION_ENCODE(_CHKCONFIG_OPTION_TYPE_CSTRING, 3),
 
     /**
      *  An option key whose Boolean value, when asserted, indicates
