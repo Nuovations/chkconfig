@@ -1,0 +1,156 @@
+//
+//    Copyright (c) 2023 Nuovation System Designs, LLC
+//    All rights reserved.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing,
+//    software distributed under the License is distributed on an "AS
+//    IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+//    express or implied.  See the License for the specific language
+//    governing permissions and limitations under the License.
+//
+//    Description:
+//      This file is the manual page source in AsciiDoc format for the
+//      chkconfig configuration state management utility.
+//
+
+chkconfig(8)
+============
+
+NAME
+----
+chkconfig - configuration state management utility
+
+SYNOPSIS
+--------
+[verse]
+*chkconfig* [ *-hV* ]
+*chkconfig* [ *<directory options>* ] [ *-dsq* ]
+*chkconfig* [ *<directory options>* ] [ *-dq* ] <'flag'>
+*chkconfig* [ *<directory options>* ] [ *-fq* ] <'flag'> <*on* | *off*>
+
+DESCRIPTION
+-----------
+
+'chkconfig' is an admnistrative command line interface utility that
+may be used to get, check, or set the configuration state for one or
+more flags used by system initialization or start-up scripts.
+
+A flag is considered *on* if its backing file(s) contain the string
+'on' and *off* otherwise.
+
+When invoked with no arguments or additionally with the *-s* option
+(see *OPTIONS* below), 'chkconfig' prints to standard output the
+state (that is, *on* or *off*) of every flag found in the available
+backing files. Normally, the flags are shown sorted lexicographically
+by flag name. However, with the *-s* option, they are primary sorted
+by state, from *on* to *off*, and then secondarily by flag name.
+
+When invoked with a single 'flag' argument, 'chkconfig' exits with
+status 0 if 'flag' is *on* and with status 1 if 'flag' is *off*. This
+provides a convenient design pattern for integration with shell
+scripts to test the state of a flag. An example is shown below using
+Bourne shell sh(1) syntax:
+
+[source,sh]
+----
+if chkconfig verbose; then
+    echo "Verbose is	on"
+else
+    echo "Verbose is	off"
+fi
+----
+
+When invoked with a 'flag' and a second argument, 'chkconfig' allows
+the state of the specified flag to be set. However, by default, the
+backing file for the specified flag must exist in order for its state
+to be changed. The *-f* ('force') option may be specified to override
+this behavior, creating the backing file if it does not exist.
+
+OPTIONS
+-------
+chkconfig accepts several different options which are documented here
+in groups for better understanding of their meaning. You can get
+information about options by running *chkconfig --help*.
+
+.General options:
+
+*-h*::
+*--help*::
+	Show help information, including all options, and then exit.
+
+*-q*
+*--quiet*::
+	Work silently, even if an error occurs.
+*-V*
+*--version*::
+	Print version and copyright information and then exit.
+
+.Directory options:
+
+*--default-directory 'DIR'*::
+	Use 'DIR' directory as the read-only flag state fallback default
+	directory when a flag does not exist in the state directory
+	(default: /etc/config).
+*--state-directory 'DIR'*::
+	Use 'DIR' directory as the read-write flag state directory (default:
+	/var/config).
+
+.Check / Get / List options:
+
+*-d*
+*--use-default-directory*::
+	Include the default directory as a fallback.
+*-s*
+*--state*::
+	Print the state of every configuration flag, sorting by state.
+
+.Set options:
+
+*-f*
+*--force*::
+	Forcibly create the specified flag state file if it does not exist.
+
+EXIT STATUS
+-----------
+
+On success, 'chkconfig' exits with a status of 0; otherwise, with a
+status of 1.
+
+When checking or querying the state of a flag, a status of 0 indicates
+*on*, whereas a status of 1 indicates *off*.
+
+FILES
+-----
+
+[options="header"]
+|=================
+| File | Description
+| /etc/config | The read-only flag state fallback 'default' backing file directory to use when a flag does not exist in the 'state' directory.
+| /var/config | The read/write flag state backing file directory.
+|=================
+
+NOTES
+-----
+
+'chkconfig' is inspired by and designed to work as a superset of the functionality of the same name that originally appeared on Silicon Graphics' (also known as, SGI) now-defunct IRIX operating system.
+
+AUTHOR
+------
+Written by Grant Erickson at Nuovations.
+
+COPYRIGHT
+---------
+Copyright (C) 2023 Nuovation System Designs, LLC.
+
+LICENSE
+-------
+
+'chkconfig' is free software distributed under the Apache License,
+Version 2.0. You may obtain a copy of the License at
+https://www.apache.org/licenses/LICENSE-2.0.

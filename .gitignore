@@ -1,0 +1,9 @@
+.deps
+.libs
+.dirstamp
+autom4te.cache
+config.cache
+config.log
+config.status
+libtool
+Makefile
