@@ -137,7 +137,7 @@ typedef chkconfig_options_t *              chkconfig_options_pointer_t;
  *  @private
  *
  */
-typedef enum {
+enum _chkconfig_option_type {
     _CHKCONFIG_OPTION_TYPE_NONE    = 0x000,
 
     _CHKCONFIG_OPTION_TYPE_INT8    = 0x001,
@@ -153,7 +153,7 @@ typedef enum {
 
     _CHKCONFIG_OPTION_TYPE_BOOLEAN = _CHKCONFIG_OPTION_TYPE_UINT8,
     _CHKCONFIG_OPTION_TYPE_CSTRING = _CHKCONFIG_OPTION_TYPE_POINTER
-} chkconfig_option_type_t;
+};
 
 /**
  *  The bitmask for the option key type encoding.
@@ -204,7 +204,7 @@ typedef enum {
  *  An enumeration key for specifying a chkconfig option key/value pair.
  *
  */
-typedef enum {
+enum {
     /**
      *  An option key whose immutable null-terminated C string value
      *  is the read/write flag state backing file directory.
@@ -237,7 +237,13 @@ typedef enum {
      *
      */
     CHKCONFIG_OPTION_USE_DEFAULT_DIRECTORY  = _CHKCONFIG_OPTION_ENCODE(_CHKCONFIG_OPTION_TYPE_BOOLEAN, 4)
-} chkconfig_option_t;
+};
+
+/**
+ *  A type for a chkconfig option key/value pair key.
+ *
+ */
+typedef uint32_t chkconfig_option_t;
 
 // MARK: Function Prototypes
 
