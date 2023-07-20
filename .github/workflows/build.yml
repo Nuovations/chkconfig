@@ -1,0 +1,88 @@
+#
+#    Copyright (c) 2023 Nuovation System Designs, LLC. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+
+#
+#    Description:
+#      This file is the GitHub Actions hosted, distributed continuous 
+#      integration configuration file for chkconfig.
+#
+
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+
+  linux:
+    runs-on: ubuntu-latest
+    name: "Linux ${{matrix.compiler['name']}}"
+    strategy:
+      matrix:
+        compiler:
+          - { name: GCC,        c: gcc,   cxx: g++ }
+    env:
+      CC: ${{matrix.compiler['c']}}
+      CXX: ${{matrix.compiler['cxx']}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install autoconf automake libtool
+    - name: Bootstrap and Configure
+      run: |
+        ./bootstrap-configure -C --prefix=/
+    - name: Coding Style
+      run: |
+        make -j pretty-check
+    - name: Build
+      run: |
+        make -j
+    - name: Test
+      run: |
+        make -j check
+
+  macos:
+    runs-on: macos-10.15
+    name: "macOS ${{matrix.compiler['name']}}"
+    strategy:
+      matrix:
+        compiler:
+          - { name: GCC,        c: gcc,   cxx: g++ }
+          - { name: clang/LLVM, c: clang, cxx: clang++ }
+    env:
+      CC: ${{matrix.compiler['c']}}
+      CXX: ${{matrix.compiler['cxx']}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install autoconf automake libtool doxygen
+    - name: Bootstrap and Configure
+      run: |
+        export PATH="$(brew --prefix m4)/bin:${PATH}"
+        ./bootstrap-configure -C --prefix=/
+    - name: Coding Style
+      run: |
+        make -j pretty-check
+    - name: Build
+      run: |
+        make -j
+    - name: Test
+      run: |
+        make -j check
