@@ -677,36 +677,28 @@ static chkconfig_status_t chkconfigStateGetCount(chkconfig_context_t &inContext,
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigStateGetAll(chkconfig_context_t &inContext,
+static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
+                                               DIR *inDirectory,
                                                chkconfig_flag_state_tuple_t *&outFlagStateTuples,
-                                               size_t &outCount)
+                                               const size_t &inCount)
 {
-    size_t                         lCount           = 0;
-    chkconfig_flag_state_tuple_t * lFlagStateTuples = nullptr;
-    DIR *                          lDirectory       = nullptr;
     struct dirent *                lDirent;
     size_t                         lIndex = 0;
     struct stat                    lMetadata;
     int                            lStatus;
     chkconfig_status_t             lRetval = CHKCONFIG_STATUS_SUCCESS;
 
-    lRetval = chkconfigStateGetCount(inContext, lCount);
-    nlREQUIRE_SUCCESS(lRetval, done);
+    nlREQUIRE_ACTION(inDirectoryPath != nullptr, done, lRetval = -EINVAL);
+    nlREQUIRE_ACTION(inDirectory     != nullptr, done, lRetval = -EINVAL);
 
-    lRetval = chkconfigFlagStateTupleInit(lFlagStateTuples, lCount);
-    nlREQUIRE_SUCCESS(lRetval, done);
-
-    lDirectory = opendir(inContext.m_options->m_state_dir);
-    nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
-
-    while (((lDirent = readdir(lDirectory)) != nullptr) && (lIndex < lCount))
+    while (((lDirent = readdir(inDirectory)) != nullptr) && (lIndex < inCount))
     {
         char lFlagPath[PATH_MAX];
 
-        lRetval = chkconfigStatePathCopy(inContext,
-                                         lDirent->d_name,
-                                         PATH_MAX,
-                                         &lFlagPath[0]);
+        lRetval = chkconfigFlagPathCopy(inDirectoryPath,
+                                        lDirent->d_name,
+                                        PATH_MAX,
+                                        &lFlagPath[0]);
         nlREQUIRE_SUCCESS(lRetval, done);
 
         lStatus = stat(lFlagPath, &lMetadata);
@@ -716,25 +708,84 @@ static chkconfig_status_t chkconfigStateGetAll(chkconfig_context_t &inContext,
         {
             constexpr bool lUseDefaultDirectory = true;
 
-            lRetval = chkconfigStateGet(lFlagPath, lFlagStateTuples[lIndex].m_state, !lUseDefaultDirectory);
+            lRetval = chkconfigStateGet(lFlagPath, outFlagStateTuples[lIndex].m_state, !lUseDefaultDirectory);
             nlREQUIRE_SUCCESS(lRetval, done);
 
-            lFlagStateTuples[lIndex].m_flag = strdup(lDirent->d_name);
-            nlREQUIRE_ACTION(lFlagStateTuples[lIndex].m_flag != nullptr, done, lRetval = -ENOMEM);
+            outFlagStateTuples[lIndex].m_flag = strdup(lDirent->d_name);
+            nlREQUIRE_ACTION(outFlagStateTuples[lIndex].m_flag != nullptr, done, lRetval = -ENOMEM);
+
             lIndex++;
         }
     }
+
+ done:
+    return (lRetval);
+}
+
+static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
+                                               chkconfig_flag_state_tuple_t *&outFlagStateTuples,
+                                               size_t &outCount)
+{
+    size_t                         lCount           = 0;
+    chkconfig_flag_state_tuple_t * lFlagStateTuples = nullptr;
+    DIR *                          lDirectory       = nullptr;
+    chkconfig_status_t             lRetval = CHKCONFIG_STATUS_SUCCESS;
+
+    nlREQUIRE_ACTION(inDirectoryPath != nullptr, done, lRetval = -EINVAL);
+
+    lRetval = chkconfigStateGetCount(inDirectoryPath, lCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    lRetval = chkconfigFlagStateTupleInit(lFlagStateTuples, lCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    lDirectory = opendir(inDirectoryPath);
+    nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
+
+    lRetval = chkconfigStateGetAll(inDirectoryPath,
+                                   lDirectory,
+                                   lFlagStateTuples,
+                                   lCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
 
     outFlagStateTuples = lFlagStateTuples;
     outCount           = lCount;
 
  done:
+    // If we failed and flag state tuples were allocated, destory them
+    // before returning since the caller is only responsible to do so
+    // on success.
+
+    if (lRetval < CHKCONFIG_STATUS_SUCCESS)
+    {
+        if (lFlagStateTuples != nullptr)
+        {
+            chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lFlagStateTuples, lCount);
+            nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
+        }
+    }
+
     if (lDirectory != nullptr)
     {
-        lStatus = closedir(lDirectory);
+        const int lStatus = closedir(lDirectory);
         nlVERIFY_ACTION(lStatus == 0, lRetval = -errno);
     }
 
+    return (lRetval);
+}
+
+static chkconfig_status_t chkconfigStateGetAll(chkconfig_context_t &inContext,
+                                               chkconfig_flag_state_tuple_t *&outFlagStateTuples,
+                                               size_t &outCount)
+{
+    chkconfig_status_t             lRetval = CHKCONFIG_STATUS_SUCCESS;
+
+    lRetval = chkconfigStateGetAll(inContext.m_options->m_state_dir,
+                                   outFlagStateTuples,
+                                   outCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+ done:
     return (lRetval);
 }
 
