@@ -436,7 +436,7 @@ static chkconfig_status_t chkconfigStateGet(const char *inFlagPath,
 static chkconfig_status_t chkconfigFlagPathCopy(const char *inDirectory,
                                                 const chkconfig_flag_t &inFlag,
                                                 const size_t &inPathSize,
-                                                char *&outPath)
+                                                char *outPath)
 {
     int                lStatus;
     chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
@@ -567,31 +567,38 @@ static chkconfig_status_t chkconfigStateGetMultiple(chkconfig_context_t &inConte
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigStateGetCount(chkconfig_context_t &inContext,
+static chkconfig_status_t chkconfigStateGetCount(const char *inDirectoryPath,
+                                                 DIR *inDirectory,
                                                  size_t &outCount)
 {
-    DIR *              lDirectory = nullptr;
     struct dirent *    lDirent;
     int                lStatus;
     struct stat        lMetadata;
-    size_t             lCount = 0;
+    size_t             lCount  = 0;
     chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
 
-    lDirectory = opendir(inContext.m_options->m_state_dir);
-    nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
+    nlREQUIRE_ACTION(inDirectoryPath != nullptr, done, lRetval = -EINVAL);
+    nlREQUIRE_ACTION(inDirectory     != nullptr, done, lRetval = -EINVAL);
 
-    while ((lDirent = readdir(lDirectory)) != nullptr)
+    while ((lDirent = readdir(inDirectory)) != nullptr)
     {
         char lFlagPath[PATH_MAX];
 
-        lRetval = chkconfigStatePathCopy(inContext,
-                                         lDirent->d_name,
-                                         PATH_MAX,
-                                         &lFlagPath[0]);
+        lRetval = chkconfigFlagPathCopy(inDirectoryPath,
+                                        lDirent->d_name,
+                                        PATH_MAX,
+                                        &lFlagPath[0]);
         nlREQUIRE_SUCCESS(lRetval, done);
 
         lStatus = stat(lFlagPath, &lMetadata);
         nlREQUIRE_ACTION(lStatus == 0, done, lRetval = -errno);
+
+        // Ignore anything but regular files, which importantly
+        // includes "." and "..".
+        //
+        // Ideally, there should not be anything but "." and ".." and
+        // regular files in the directory; however, there doesn't seem
+        // to be mandate to error out on such entries at the moment.
 
         if (S_ISREG(lMetadata.st_mode))
         {
@@ -602,12 +609,71 @@ static chkconfig_status_t chkconfigStateGetCount(chkconfig_context_t &inContext,
     outCount = lCount;
 
  done:
+    return (lRetval);
+}
+
+static chkconfig_status_t chkconfigStateGetCount(const char *inDirectoryPath,
+                                                 size_t &outCount)
+{
+    DIR *              lDirectory = nullptr;
+    chkconfig_status_t lStatus;
+    chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
+
+    nlREQUIRE_ACTION(inDirectoryPath != nullptr, done, lRetval = -EINVAL);
+
+    lDirectory = opendir(inDirectoryPath);
+    nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
+
+    lRetval = chkconfigStateGetCount(inDirectoryPath,
+                                     lDirectory,
+                                     outCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+ done:
     if (lDirectory != nullptr)
     {
         lStatus = closedir(lDirectory);
         nlVERIFY_ACTION(lStatus == 0, lRetval = -errno);
     }
 
+    return (lRetval);
+}
+
+/**
+ *  @brief
+ *    Get the count of all flags covered by a backing store file.
+ *
+ *  This attempts to get a count of all flags covered by a backing
+ *  store file.
+ *
+ *  @note
+ *    Depending on runtime library options, the returned count may
+ *    include only the state directory or both the default and state
+ *    directories.
+ *
+ *  @param[in]   inContext        A reference to the chkconfig
+ *                                library context for which to
+ *                                get the count of all flags
+ *                                covered by a backing store
+ *                                file.
+ *  @param[out]  outCount         A reference to storage by which
+ *                                to return the count if successful.
+ *
+ *  @retval  CHKCONFIG_STATUS_SUCCESS  If successful.
+ *
+ *  @private
+ *
+ */
+static chkconfig_status_t chkconfigStateGetCount(chkconfig_context_t &inContext,
+                                                 size_t &outCount)
+{
+    chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
+
+    lRetval = chkconfigStateGetCount(inContext.m_options->m_state_dir,
+                                     outCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+ done:
     return (lRetval);
 }
 
@@ -1074,6 +1140,11 @@ chkconfig_status_t chkconfig_state_get_multiple(chkconfig_context_pointer_t cont
  *
  *  This attempts to get a count of all flags covered by a backing
  *  store file.
+ *
+ *  @note
+ *    Depending on runtime library options, the returned count may
+ *    include only the state directory or both the default and state
+ *    directories.
  *
  *  @param[in]   context_pointer  A pointer to the chkconfig
  *                                library context for which to
