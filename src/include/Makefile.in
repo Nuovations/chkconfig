@@ -357,17 +357,17 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_HEADERS = \
-    chkconfig-assert.h \
+    chkconfig-assert.h     \
     $(NULL)
 
 BUILT_SOURCES := \
-    chkconfig \
-    chkconfig-version.h \
+    chkconfig              \
+    chkconfig-version.h    \
     $(NULL)
 
 CLEANFILES := \
-    chkconfig \
-    chkconfig-version.h \
+    chkconfig              \
+    chkconfig-version.h    \
     $(NULL)
 
 all: $(BUILT_SOURCES) chkconfig-config.h
@@ -645,7 +645,7 @@ $(top_builddir)/.local-version:
 chkconfig-version.h: $(top_builddir)/.local-version
 	$(call check-file,$(@))
 
-chkconfig: ../lib
+chkconfig: $(srcdir)/../lib
 	$(nl-create-link)
 
 include $(abs_top_nlbuild_autotools_dir)/automake/post.am

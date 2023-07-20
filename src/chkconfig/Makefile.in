@@ -433,13 +433,14 @@ SUBDIRS = \
     tests                                                          \
     $(NULL)
 
+chkconfig_LDADD = \
+    $(top_builddir)/src/lib/libchkconfig.la                        \
+    $(NULL)
+
 chkconfig_CPPFLAGS = \
     -DCHKCONFIG_DEFAULTDIR_DEFAULT="\"$(chkconfig_defaultdir)\""   \
     -DCHKCONFIG_STATEDIR_DEFAULT="\"$(chkconfig_statedir)\""       \
-    $(NULL)
-
-chkconfig_LDADD = \
-    $(top_builddir)/src/lib/libchkconfig.la                        \
+    -I$(top_srcdir)/src/include                                    \
     $(NULL)
 
 chkconfig_SOURCES = \
