@@ -22,18 +22,18 @@
 
 include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
 
-noinst_HEADERS = \
-    chkconfig-assert.h \
+noinst_HEADERS           = \
+    chkconfig-assert.h     \
     $(NULL)
 
-BUILT_SOURCES := \
-    chkconfig \
-    chkconfig-version.h \
+BUILT_SOURCES           := \
+    chkconfig              \
+    chkconfig-version.h    \
     $(NULL)
 
-CLEANFILES    := \
-    chkconfig \
-    chkconfig-version.h \
+CLEANFILES              := \
+    chkconfig              \
+    chkconfig-version.h    \
     $(NULL)
 
 define check-file-chkconfig-version.h
@@ -47,7 +47,7 @@ $(top_builddir)/.local-version:
 chkconfig-version.h: $(top_builddir)/.local-version
 	$(call check-file,$(@))
 
-chkconfig: ../lib
+chkconfig: $(srcdir)/../lib
 	$(nl-create-link)
 
 include $(abs_top_nlbuild_autotools_dir)/automake/post.am
