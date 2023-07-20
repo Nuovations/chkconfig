@@ -22,11 +22,12 @@
 
 include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
 
-AM_MAKEFLAGS                              = --no-print-directory
+AM_MAKEFLAGS                                     = --no-print-directory
 
-SUBDIRS                                   = \
-    src                                     \
-    doc                                     \
+SUBDIRS                                          = \
+    third_party                                    \
+    src                                            \
+    doc                                            \
     $(NULL)
 
 EXTRA_DIST                                = \
