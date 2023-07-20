@@ -393,30 +393,23 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+EXTRA_DIST = \
+    nlbuild-autotools               \
+    $(NULL)
+
 
 # Always package (e.g. for 'make dist') these subdirectories.
 DIST_SUBDIRS = \
     $(NULL)
 
 
-# Here is an example with nlunit-test. Uncomment and adapt or delete
-# this, as needed. If you choose to use this, please also take a look at
-# configure.ac and Makefile.am and uncomment the appropriate sections
-# there.
-
-# # NLUNIT_TEST_SUBDIRS is not a permanent part of DIST_SUBDIRS since we do not
-# # ever want to include it in a distribution archive; however, when it's been
-# # pulled as a 'repo' module, we do want to remove it on invocation of the
-# # 'distclean' target. Consequently, we conditionally include it in DIST_SUBDIRS
-# # on invocation of 'distclean-recursive'
-#
-# distclean-recursive: DIST_SUBDIRS += $(NLUNIT_TEST_SUBDIRS)
-
 # Always build (e.g. for 'make all') these subdirectories.
-# #
-# # The value of NLUNIT_TEST_SUBDIRS will be populated by configure if
-# # --with-nlunit_test=internal
+#
+# The values of <any of the third-party packages listed in
+# repos.conf>_SUBDIRS will be populated by configure if --with-<any of
+# the third-party packages listed in repos.conf>=internal
 SUBDIRS = \
+    $(NLASSERT_SUBDIRS)             \
     $(NLUNIT_TEST_SUBDIRS)          \
     $(NULL)
 
@@ -736,6 +729,15 @@ uninstall-am:
 
 
 include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
+
+# <any of the third-party packages listed in repos.conf>_SUBDIRS are
+# not a permanent part of DIST_SUBDIRS since we do not ever want to
+# include them in a distribution archive; however, when they've been
+# pulled as a 'repo' module, we do want to remove them on invocation
+# of the 'distclean' target. Consequently, we conditionally include
+# them in DIST_SUBDIRS on invocation of 'distclean-recursive'
+
+distclean-recursive: DIST_SUBDIRS += $(NLASSERT_SUBDIRS) $(NLUNIT_TEST_SUBDIRS)
 
 include $(abs_top_nlbuild_autotools_dir)/automake/post.am
 

@@ -461,27 +461,32 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_MAKEFLAGS = --no-print-directory
 SUBDIRS = \
-    src                                     \
-    doc                                     \
+    third_party                                    \
+    src                                            \
+    doc                                            \
     $(NULL)
 
 EXTRA_DIST = \
-    Makefile-bootstrap                      \
-    .default-version                        \
-    bootstrap                               \
-    bootstrap-configure                     \
-    $(srcdir)/third_party/nlbuild-autotools \
+    Makefile-bootstrap                             \
+    .default-version                               \
+    bootstrap                                      \
+    bootstrap-configure                            \
+    build/cstyle/cstyle.options                    \
+    repos.conf                                     \
+    README.md                                      \
     $(NULL)
 
 BUILT_SOURCES = \
-    .local-version                          \
+    .local-version                                 \
     $(NULL)
 
 dist_doc_DATA = \
+    CHANGES.md                                     \
+    LICENSE                                        \
     $(NULL)
 
 DISTCLEANFILES = \
-    .local-version                          \
+    .local-version                                 \
     $(NULL)
 
 
@@ -510,6 +515,20 @@ DISTCLEANFILES = \
 # for a given MAKELEVEL even as .local-version and .dist-version are created
 # during makefile execution.
 VERSION_FILE := $(if $(wildcard $(builddir)/.local-version),$(builddir)/.local-version,$(if $(wildcard $(srcdir)/.dist-version),$(srcdir)/.dist-version,$(srcdir)/.default-version))
+
+# If you are synchronizing a package on which yours depends using
+# 'repos.conf', to 'third_party', uncomment and adapt or delete this,
+# as needed. If you choose to use this, please also take a look at
+# Makefile.am and third_party/Makefile.am and uncomment the
+# appropriate sections there.
+
+#
+# When we run 'distcheck' and --with-nlunit_test defaults to 'internal',
+# the nlbuild-autotools infrastructure will attempt to create git paths
+# to manage the nlunit-test repo. Two directories need to be writable
+# to facilitate this.
+#
+DISTCHECK_CONFIGURE_FLAGS = `chmod u+w .. ../third_party`
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -928,7 +947,7 @@ distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic distclean-libtool \
-	distclean-tags
+	distclean-local distclean-tags
 
 dvi: dvi-recursive
 
@@ -998,10 +1017,10 @@ uninstall-am: uninstall-dist_docDATA
 	clean-libtool cscope cscopelist-am ctags ctags-am dist \
 	dist-all dist-bzip2 dist-gzip dist-hook dist-lzip dist-shar \
 	dist-tarZ dist-xz dist-zip distcheck distclean \
-	distclean-generic distclean-libtool distclean-tags \
-	distcleancheck distdir distuninstallcheck dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dist_docDATA install-dvi \
+	distclean-generic distclean-libtool distclean-local \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dist_docDATA install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
@@ -1087,34 +1106,22 @@ $(distdir)/.dist-version: $(builddir)/.local-version force
 $(distdir)/.dist-version $(builddir)/.local-version:
 	$(call check-file,$(@F))
 
-# If you are synchronizing a package on which yours depends using 'repos.conf',
-# to 'third_party', uncomment and adapt or delete this, as needed. If you choose
-# to use this, please also take a look at Makefile.am and third_party/Makefile.am
-# and uncomment the appropriate sections there.
-
-# #
-# # When we run 'distcheck' and --with-nlunit_test defaults to 'internal',
-# # the nlbuild-autotools infrastructure will attempt to create git paths
-# # to manage the nlunit-test repo. Two directories need to be writable
-# # to facilitate this.
-# #
-# DISTCHECK_CONFIGURE_FLAGS=`chmod u+w .. ../third_party`
-
 dist distcheck distdir install-headers: $(BUILT_SOURCES)
 
 dist-hook: $(distdir)/.dist-version
 
-# If you are synchronizing a package on which yours depends using 'repos.conf',
-# to 'third_party', uncomment and adapt or delete this, as needed. If you choose
-# to use this, please also take a look at Makefile.am and third_party/Makefile.am
-# and uncomment the appropriate sections there.
+# If you are synchronizing a package on which yours depends using
+# 'repos.conf', to 'third_party', uncomment and adapt or delete this,
+# as needed. If you choose to use this, please also take a look at
+# Makefile.am and third_party/Makefile.am and uncomment the
+# appropriate sections there.
 
-# #
-# # Ensure any locally synchronized repositories defined by 'repos.conf'
-# # are cleaned up.
-# #
-# distclean-local:
-# 	$(MAKE) -C $(srcdir) -f Makefile-bootstrap clean-repos
+#
+# Ensure any locally synchronized repositories defined by 'repos.conf'
+# are cleaned up.
+#
+distclean-local:
+	$(MAKE) -C $(srcdir) -f Makefile-bootstrap clean-repos
 
 #
 # Top-level convenience target for making a documentation-only
