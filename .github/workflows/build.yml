@@ -73,7 +73,7 @@ jobs:
         make -j check
 
   macos:
-    runs-on: macos-10.15
+    runs-on: macos-latest
     name: "macOS ${{matrix.compiler['name']}} [${{matrix.configuration['name']}}]"
     strategy:
       matrix:
