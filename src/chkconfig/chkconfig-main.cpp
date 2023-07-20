@@ -529,9 +529,9 @@ static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
     chkconfig_status_t                   lStatus;
     chkconfig_status_t                   lRetval  = CHKCONFIG_STATUS_SUCCESS;
 
-    lRetval = chkconfig_state_get_all(&inContext,
-                                      &lFlagStateTuples,
-                                      &lFlagStateTuplesCount);
+    lRetval = chkconfig_state_copy_all(&inContext,
+                                       &lFlagStateTuples,
+                                       &lFlagStateTuplesCount);
     nlREQUIRE_SUCCESS(lRetval, done);
 
     // Sort the flags according to the command line options

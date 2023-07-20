@@ -722,9 +722,9 @@ static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
-                                               chkconfig_flag_state_tuple_t *&outFlagStateTuples,
-                                               size_t &outCount)
+static chkconfig_status_t chkconfigStateCopyAll(const char *inDirectoryPath,
+                                                chkconfig_flag_state_tuple_t *&outFlagStateTuples,
+                                                size_t &outCount)
 {
     size_t                         lCount           = 0;
     chkconfig_flag_state_tuple_t * lFlagStateTuples = nullptr;
@@ -774,15 +774,15 @@ static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigStateGetAll(chkconfig_context_t &inContext,
-                                               chkconfig_flag_state_tuple_t *&outFlagStateTuples,
-                                               size_t &outCount)
+static chkconfig_status_t chkconfigStateCopyAll(chkconfig_context_t &inContext,
+                                                chkconfig_flag_state_tuple_t *&outFlagStateTuples,
+                                                size_t &outCount)
 {
     chkconfig_status_t             lRetval = CHKCONFIG_STATUS_SUCCESS;
 
-    lRetval = chkconfigStateGetAll(inContext.m_options->m_state_dir,
-                                   outFlagStateTuples,
-                                   outCount);
+    lRetval = chkconfigStateCopyAll(inContext.m_options->m_state_dir,
+                                    outFlagStateTuples,
+                                    outCount);
     nlREQUIRE_SUCCESS(lRetval, done);
 
  done:
@@ -1113,7 +1113,7 @@ chkconfig_status_t chkconfig_options_set(chkconfig_context_pointer_t context_poi
  *
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get_multiple
- *  @sa chkconfig_state_get_all
+ *  @sa chkconfig_state_copy_all
  *
  *  @ingroup observers
  *
@@ -1163,7 +1163,7 @@ chkconfig_status_t chkconfig_state_get(chkconfig_context_pointer_t context_point
  *
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get
- *  @sa chkconfig_state_get_all
+ *  @sa chkconfig_state_copy_all
  *  @sa chkconfig_flag_state_tuple_init
  *
  *  @ingroup observers
@@ -1211,7 +1211,7 @@ chkconfig_status_t chkconfig_state_get_multiple(chkconfig_context_pointer_t cont
  *
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get
- *  @sa chkconfig_state_get_all
+ *  @sa chkconfig_state_copy_all
  *  @sa chkconfig_flag_state_tuple_init
  *
  *  @ingroup observers
@@ -1234,10 +1234,10 @@ chkconfig_status_t chkconfig_state_get_count(chkconfig_context_pointer_t context
 
 /**
  *  @brief
- *    Get the state values associated with all flags covered by a
+ *    Copy the state values associated with all flags covered by a
  *    backing store file.
  *
- *  This attempts to get the state values associated with all flags
+ *  This attempts to copy the state values associated with all flags
  *  covered by a backing store file.
  *
  *  @note
@@ -1247,7 +1247,7 @@ chkconfig_status_t chkconfig_state_get_count(chkconfig_context_pointer_t context
  *
  *  @param[in]      context_pointer    A pointer to the chkconfig
  *                                     library context for which to
- *                                     get the state values for all
+ *                                     copy the state values for all
  *                                     flags covered by a backing
  *                                     store file.
  *  @param[in,out]  flag_state_tuples  A pointer to storage for a
@@ -1272,15 +1272,15 @@ chkconfig_status_t chkconfig_state_get_count(chkconfig_context_pointer_t context
  *
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get
- *  @sa chkconfig_state_get_all
+ *  @sa chkconfig_state_get_multiple
  *  @sa chkconfig_flag_state_tuple_init
  *
  *  @ingroup observers
  *
  */
-chkconfig_status_t chkconfig_state_get_all(chkconfig_context_pointer_t context_pointer,
-                                           chkconfig_flag_state_tuple_t **flag_state_tuples,
-                                           size_t *count)
+chkconfig_status_t chkconfig_state_copy_all(chkconfig_context_pointer_t context_pointer,
+                                            chkconfig_flag_state_tuple_t **flag_state_tuples,
+                                            size_t *count)
 {
     chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
 
@@ -1288,9 +1288,9 @@ chkconfig_status_t chkconfig_state_get_all(chkconfig_context_pointer_t context_p
     nlREQUIRE_ACTION(flag_state_tuples != nullptr, done, retval = -EINVAL);
     nlREQUIRE_ACTION(count             != nullptr, done, retval = -EINVAL);
 
-    retval = Detail::chkconfigStateGetAll(*context_pointer,
-                                          *flag_state_tuples,
-                                          *count);
+    retval = Detail::chkconfigStateCopyAll(*context_pointer,
+                                           *flag_state_tuples,
+                                           *count);
 
  done:
     return (retval);

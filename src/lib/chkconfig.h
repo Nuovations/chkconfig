@@ -285,9 +285,9 @@ extern chkconfig_status_t chkconfig_state_get_multiple(chkconfig_context_pointer
                                                        size_t count);
 extern chkconfig_status_t chkconfig_state_get_count(chkconfig_context_pointer_t context_pointer,
                                                     size_t *count);
-extern chkconfig_status_t chkconfig_state_get_all(chkconfig_context_pointer_t context_pointer,
-                                                  chkconfig_flag_state_tuple_t **flag_state_tuples,
-                                                  size_t *count);
+extern chkconfig_status_t chkconfig_state_copy_all(chkconfig_context_pointer_t context_pointer,
+                                                   chkconfig_flag_state_tuple_t **flag_state_tuples,
+                                                   size_t *count);
 
 // MARK: Mutators
 
