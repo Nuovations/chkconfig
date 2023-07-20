@@ -493,12 +493,19 @@ static chkconfig_status_t chkconfigStatePathCopy(const chkconfig_context_t &inCo
     return (lRetval);
 }
 
+static bool chkconfigUseDefaultDirectory(const chkconfig_context_t &inContext)
+{
+    const bool lRetval = (inContext.m_options->m_use_default_dir &&
+                          (inContext.m_options->m_default_dir != nullptr));
+
+    return (lRetval);
+}
+
 static chkconfig_status_t chkconfigStateGet(chkconfig_context_t &inContext,
                                             const chkconfig_flag_t &inFlag,
                                             chkconfig_state_t &outState)
 {
-    const bool         lUseDefaultDirectory = (inContext.m_options->m_use_default_dir &&
-                                               (inContext.m_options->m_default_dir != nullptr));
+    const bool         lUseDefaultDirectory = chkconfigUseDefaultDirectory(inContext);
     char               lFlagPath[PATH_MAX];
     chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
 
