@@ -125,14 +125,15 @@ NL_FILTERED_CANONICAL_TARGET
 # a native GNU package, that we want "silent" build rules, that we want
 # objects built in the same subdirectory as their source rather than collapsed
 # together at the top-level directory, that we want support for the
-# PAX format for 'make dist', and that we do not want emission of
+# PAX format for 'make dist', that we do not want emission of
 # 'PACKAGE' and 'VERSION' since AC_INIT already emits 'PACKAGE_NAME'
-# and 'PACKAGE_VERSION'.
+# and 'PACKAGE_VERSION', that we do not want gzip-compressed distributions, and
+# that we do want xz-compressed distributions.
 #
 # Disable silent build rules by either passing --disable-silent-rules to
 # configure or passing V=1 to make
 #
-AM_INIT_AUTOMAKE([1.16.1 foreign silent-rules subdir-objects tar-pax no-define])
+AM_INIT_AUTOMAKE([1.16.1 foreign silent-rules subdir-objects tar-pax no-define no-dist-gzip dist-xz])
 
 #
 # Silent build rules requires at least automake-1.11. Employ
