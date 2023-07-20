@@ -38,6 +38,7 @@ EXTRA_DIST                                       = \
     build/cstyle/cstyle.options                    \
     repos.conf                                     \
     README.md                                      \
+    TODO.md                                        \
     $(NULL)
 
 BUILT_SOURCES                                    = \
