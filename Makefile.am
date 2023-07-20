@@ -30,23 +30,25 @@ SUBDIRS                                          = \
     doc                                            \
     $(NULL)
 
-EXTRA_DIST                                = \
-    Makefile-bootstrap                      \
-    .default-version                        \
-    bootstrap                               \
-    bootstrap-configure                     \
-    $(srcdir)/third_party/nlbuild-autotools \
+EXTRA_DIST                                       = \
+    Makefile-bootstrap                             \
+    .default-version                               \
+    bootstrap                                      \
+    bootstrap-configure                            \
+    build/cstyle/cstyle.options                    \
+    repos.conf                                     \
+    README.md                                      \
     $(NULL)
 
-BUILT_SOURCES                             = \
-    .local-version                          \
+BUILT_SOURCES                                    = \
+    .local-version                                 \
     $(NULL)
 
 dist_doc_DATA                             = \
     $(NULL)
 
-DISTCLEANFILES                            = \
-    .local-version                          \
+DISTCLEANFILES                                   = \
+    .local-version                                 \
     $(NULL)
 
 #
