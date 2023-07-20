@@ -57,6 +57,7 @@ libchkconfig_la_LDFLAGS                                          = \
 libchkconfig_la_CPPFLAGS                                         = \
     -DCHKCONFIG_DEFAULTDIR_DEFAULT="\"$(chkconfig_defaultdir)\""   \
     -DCHKCONFIG_STATEDIR_DEFAULT="\"$(chkconfig_statedir)\""       \
+    -I$(top_srcdir)/src/include                                    \
     $(NULL)
 
 libchkconfig_la_SOURCES                                          = \
