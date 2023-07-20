@@ -44,7 +44,9 @@ BUILT_SOURCES                                    = \
     .local-version                                 \
     $(NULL)
 
-dist_doc_DATA                             = \
+dist_doc_DATA                                    = \
+    CHANGES.md                                     \
+    LICENSE                                        \
     $(NULL)
 
 DISTCLEANFILES                                   = \
