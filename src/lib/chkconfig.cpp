@@ -36,6 +36,9 @@
 
 #include <sys/mman.h>
 #include <sys/stat.h>
+#if defined(__APPLE__)
+#include <sys/syslimits.h>
+#endif
 
 #include "chkconfig-assert.h"
 
@@ -400,7 +403,7 @@ static chkconfig_status_t chkconfigStateGet(const char *inFlagPath,
 
     if (lMetadata.st_size > 0)
     {
-        lData = mmap(nullptr, lMetadata.st_size, PROT_READ, MAP_PRIVATE, lDescriptor, 0);
+        lData = mmap(nullptr, static_cast<size_t>(lMetadata.st_size), PROT_READ, MAP_PRIVATE, lDescriptor, 0);
         nlREQUIRE_ACTION(lData != MAP_FAILED, done, lRetval = -errno);
 
         lRetval = chkconfigStateStringGetState(reinterpret_cast<const char *>(lData), lState);
@@ -416,7 +419,7 @@ static chkconfig_status_t chkconfigStateGet(const char *inFlagPath,
  done:
     if (lData != MAP_FAILED)
     {
-        lStatus = munmap(lData, lMetadata.st_size);
+        lStatus = munmap(lData, static_cast<size_t>(lMetadata.st_size));
         nlREQUIRE_ACTION(lStatus == 0, close, lRetval = -errno);
     }
 
