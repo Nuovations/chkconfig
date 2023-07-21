@@ -26,13 +26,13 @@ man8_MANS                    = \
    chkconfig.8                 \
    $(NULL)
 
-man8_TXTS                    = $(patsubst %.8,%.txt,$(man8_MANS))
+man8_TXTS                    = $(patsubst %.8,%.adoc,$(man8_MANS))
 
 man8_XMLS                    = $(patsubst %.8,%.xml,$(man8_MANS))
 
 EXTRA_DIST                   = \
     asciidoc.conf              \
-    chkconfig.txt              \
+    chkconfig.adoc             \
     manpage-base-url.xsl.in    \
     manpage-bold-literal.xsl   \
     manpage-normal.xsl         \
@@ -69,7 +69,7 @@ CHKCONFIG_V_PROGRESS_XMLTO     = $(NL_V_PROGRESS) "XMLTO"    "$(@)"
 # Pattern rule to convert an AsciiDoc-formatted text file to a
 # Docbook XML file.
 #
-%.xml: %.txt $(srcdir)/asciidoc.conf
+%.xml: %.adoc $(srcdir)/asciidoc.conf $(srcdir)/Makefile.am
 	$(CHKCONFIG_V_PROGRESS_ASCIIDOC)
 	$(NL_V_AT)$(ASCIIDOC) \
 	    --conf-file $(srcdir)/asciidoc.conf \
