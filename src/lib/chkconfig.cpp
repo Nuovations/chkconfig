@@ -25,6 +25,9 @@
 
 #include "chkconfig.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -94,11 +97,154 @@ struct _chkconfig_options
 
 // MARK: C++
 
+static bool operator <(const chkconfig_flag_state_tuple_t &inLeftTuple,
+                       const chkconfig_flag_state_tuple_t &inRightTuple)
+{
+    const bool lRetval = (strcmp(inLeftTuple.m_flag, inRightTuple.m_flag) < 0);
+
+    return (lRetval);
+}
+
 namespace nuovations
 {
 
 namespace Detail
 {
+
+// MARK: Type Declarations
+
+/**
+ *  This defines a basis class for iterating over flag/state tuple
+ *  plain old data (POD) C style arrays.
+ *
+ *  @private
+ */
+class FlagStateTupleIteratorBasis
+{
+protected:
+    // MARK: Constructors
+
+    FlagStateTupleIteratorBasis(void);
+
+    explicit FlagStateTupleIteratorBasis(const chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
+    explicit FlagStateTupleIteratorBasis(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
+
+public:
+    // MARK: Increment Operator
+
+    FlagStateTupleIteratorBasis & operator ++(void);
+
+protected:
+    chkconfig_flag_state_tuple_t * mFlagStateTuplePointer;
+};
+
+/**
+ *  This defines a derived class for iterating input from flag/state
+ *  tuple plain old data (POD) C style arrays.
+ *
+ *  @private
+ *
+ */
+class FlagStateTupleInputIterator :
+        public FlagStateTupleIteratorBasis,
+        public std::iterator<std::input_iterator_tag,
+                             chkconfig_flag_state_tuple_t>
+{
+public:
+    // MARK: Constructors
+
+    explicit FlagStateTupleInputIterator(const chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
+    explicit FlagStateTupleInputIterator(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
+
+    // MARK: Dereferencing Operator
+
+    const chkconfig_flag_state_tuple_t & operator *(void) const;
+
+    // MARK: Comparison Operators
+
+    bool operator ==(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const;
+    bool operator !=(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const;
+    bool operator <(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const;
+};
+
+/**
+ *  This defines a derived class for iterating assigned output from
+ *  flag/state tuple plain old data (POD) C style arrays.
+ *
+ *  This class explicitly allows a custom assignment operator that
+ *  correctly handles the deep, management memory string pointer
+ *  manipulation otherwise mishandled by the compiler-generated
+ *  default, shallow-copy assignment.
+ *
+ *  @private
+ *
+ */
+class FlagStateTupleOutputAssignmentIterator :
+        public FlagStateTupleIteratorBasis,
+        public std::iterator<std::output_iterator_tag,
+                             void,
+                             std::ptrdiff_t,
+                             chkconfig_flag_state_tuple_t *,
+                             chkconfig_flag_state_tuple_t &>
+{
+public:
+    // MARK: Constructors
+
+    FlagStateTupleOutputAssignmentIterator(void);
+
+    explicit FlagStateTupleOutputAssignmentIterator(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
+
+    // MARK: Assignment Operator
+
+    FlagStateTupleOutputAssignmentIterator & operator =(const chkconfig_flag_state_tuple_t & inFlagStateTuple);
+
+    // MARK: Dereferencing Operator
+
+    FlagStateTupleOutputAssignmentIterator & operator *(void);
+};
+
+/**
+ *  This defines a derived class for iterating assigned output from
+ *  flag/state tuple plain old data (POD) C style arrays.
+ *
+ *  This class explicitly allows a custom assignment operator that
+ *  allows for counting the number of elements that would have
+ *  otherwise been assigned.
+ *
+ *  @private
+ *
+ */
+class FlagStateTupleOutputNullAssignmentIterator :
+        public std::iterator<std::output_iterator_tag,
+                             void,
+                             std::ptrdiff_t,
+                             chkconfig_flag_state_tuple_t *,
+                             chkconfig_flag_state_tuple_t &>
+{
+public:
+    // MARK: Constructors
+
+    FlagStateTupleOutputNullAssignmentIterator(void);
+
+    // MARK: Assignment Operator
+
+    FlagStateTupleOutputNullAssignmentIterator & operator =(const chkconfig_flag_state_tuple_t & inFlagStateTuple);
+
+    // MARK: Dereferencing Operator
+
+    FlagStateTupleOutputNullAssignmentIterator & operator *(void);
+
+    // MARK: Increment Operator
+
+    FlagStateTupleOutputNullAssignmentIterator & operator ++(void);
+
+    // MARK: Subtraction Operator
+
+    size_t operator -(const FlagStateTupleOutputNullAssignmentIterator &inFlagStateTupleOutputNullAssignmentIterator) const;
+
+private:
+    size_t mCount;
+};
 
 // MARK: Global Variables
 
@@ -112,6 +258,164 @@ static const chkconfig_options_t sChkconfigOptionsDefault =
 static const char * const        sOffString               = "off";
 static const char * const        sOnString                = "on";
 
+
+// MARK: Flag/State Tuple Iterator Basis
+
+// MARK: Constructors
+
+FlagStateTupleIteratorBasis :: FlagStateTupleIteratorBasis(void) :
+    mFlagStateTuplePointer(nullptr)
+{
+    return;
+}
+
+FlagStateTupleIteratorBasis :: FlagStateTupleIteratorBasis(const chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
+    mFlagStateTuplePointer(const_cast<chkconfig_flag_state_tuple_t *>(inFlagStateTuplePointer))
+{
+    return;
+}
+
+FlagStateTupleIteratorBasis :: FlagStateTupleIteratorBasis(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
+    mFlagStateTuplePointer(inFlagStateTuplePointer)
+{
+    return;
+}
+
+FlagStateTupleIteratorBasis & FlagStateTupleIteratorBasis :: operator ++(void)
+{
+    ++mFlagStateTuplePointer;
+
+    return (*this);
+}
+
+// MARK: Flag/State Tuple Input Iterator
+
+// MARK: Constructors
+
+FlagStateTupleInputIterator :: FlagStateTupleInputIterator(const chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
+    FlagStateTupleIteratorBasis(inFlagStateTuplePointer)
+{
+    return;
+}
+
+FlagStateTupleInputIterator :: FlagStateTupleInputIterator(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
+    FlagStateTupleIteratorBasis(inFlagStateTuplePointer)
+{
+    return;
+}
+
+// MARK: Dereferencing Operator
+
+const chkconfig_flag_state_tuple_t & FlagStateTupleInputIterator :: operator *(void) const
+{
+    return (*mFlagStateTuplePointer);
+}
+
+// MARK: Comparison Operators
+
+bool FlagStateTupleInputIterator :: operator ==(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const
+{
+    return mFlagStateTuplePointer == inFlagStateTupleInputIterator.mFlagStateTuplePointer;
+}
+
+bool FlagStateTupleInputIterator :: operator !=(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const
+{
+    const bool lRetval = !operator ==(inFlagStateTupleInputIterator);
+
+    return (lRetval);
+}
+
+bool FlagStateTupleInputIterator :: operator <(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const
+{
+    const bool lRetval = (mFlagStateTuplePointer < inFlagStateTupleInputIterator.mFlagStateTuplePointer);
+
+    return (lRetval);
+}
+
+// MARK: Flag/State Tuple Output Assignment Iterator
+
+// MARK: Constructors
+
+FlagStateTupleOutputAssignmentIterator :: FlagStateTupleOutputAssignmentIterator(void) :
+    FlagStateTupleIteratorBasis()
+{
+    return;
+}
+
+FlagStateTupleOutputAssignmentIterator :: FlagStateTupleOutputAssignmentIterator(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
+    FlagStateTupleIteratorBasis(inFlagStateTuplePointer)
+{
+    return;
+}
+
+// MARK: Assignment Operator
+
+FlagStateTupleOutputAssignmentIterator & FlagStateTupleOutputAssignmentIterator :: operator =(const chkconfig_flag_state_tuple_t & inFlagStateTuple)
+{
+    if (mFlagStateTuplePointer != &inFlagStateTuple)
+    {
+        if (mFlagStateTuplePointer->m_flag != nullptr)
+        {
+            free(const_cast<char *>(mFlagStateTuplePointer->m_flag));
+        }
+
+        mFlagStateTuplePointer->m_flag  = strdup(inFlagStateTuple.m_flag);
+        mFlagStateTuplePointer->m_state = inFlagStateTuple.m_state;
+    }
+
+    return (*this);
+}
+
+// MARK: Dereferencing Operator
+
+FlagStateTupleOutputAssignmentIterator & FlagStateTupleOutputAssignmentIterator :: operator *(void)
+{
+    return (*this);
+}
+
+// MARK: Flag/State Tuple Null Output Assignment Iterator
+
+// MARK: Constructors
+
+FlagStateTupleOutputNullAssignmentIterator :: FlagStateTupleOutputNullAssignmentIterator(void) :
+    mCount(0)
+{
+    return;
+}
+
+// MARK: Assignment Operator
+
+FlagStateTupleOutputNullAssignmentIterator & FlagStateTupleOutputNullAssignmentIterator :: operator =(const chkconfig_flag_state_tuple_t & inFlagStateTuple)
+{
+    (void)inFlagStateTuple;
+
+    mCount++;
+
+    return (*this);
+}
+
+// MARK: Dereferencing Operator
+
+FlagStateTupleOutputNullAssignmentIterator & FlagStateTupleOutputNullAssignmentIterator :: operator *(void)
+{
+    return (*this);
+}
+
+// MARK: Increment Operator
+
+FlagStateTupleOutputNullAssignmentIterator & FlagStateTupleOutputNullAssignmentIterator :: operator ++(void)
+{
+    return (*this);
+}
+
+// MARK: Subtraction Operator
+
+size_t FlagStateTupleOutputNullAssignmentIterator :: operator -(const FlagStateTupleOutputNullAssignmentIterator &inFlagStateTupleOutputNullAssignmentIterator) const
+{
+    const size_t lRetval = (mCount - inFlagStateTupleOutputNullAssignmentIterator.mCount);
+
+    return (lRetval);
+}
 
 // MARK: Utility
 
@@ -160,6 +464,8 @@ static chkconfig_status_t chkconfigFlagStateTupleInit(chkconfig_flag_state_tuple
         (malloc(inFlagStateTupleCount * sizeof (chkconfig_flag_state_tuple_t)));
     nlREQUIRE_ACTION(inFlagStateTuples != nullptr, done, lRetval = -ENOMEM);
 
+    memset(&inFlagStateTuples[0], 0, inFlagStateTupleCount * sizeof (chkconfig_flag_state_tuple_t));
+
  done:
     return (lRetval);
 }
@@ -187,6 +493,109 @@ static chkconfig_status_t chkconfigFlagStateTupleDestroy(chkconfig_flag_state_tu
 
     free(inFlagStateTuples);
     inFlagStateTuples = nullptr;
+
+ done:
+    return (lRetval);
+}
+
+static int FlagSortFunction(const void *inLeft, const void *inRight)
+{
+    const chkconfig_flag_state_tuple_t *lLeftTuple  = static_cast<const chkconfig_flag_state_tuple_t *>(inLeft);
+    const chkconfig_flag_state_tuple_t *lRightTuple = static_cast<const chkconfig_flag_state_tuple_t *>(inRight);
+    int                                 lRetval;
+
+    lRetval = strcmp(lLeftTuple->m_flag, lRightTuple->m_flag);
+
+    return (lRetval);
+}
+
+static size_t chkconfigFlagStateTupleCountUnion(const chkconfig_flag_state_tuple_t * inLeftFirst,
+                                                const chkconfig_flag_state_tuple_t * inLeftLast,
+                                                const chkconfig_flag_state_tuple_t * inRightFirst,
+                                                const chkconfig_flag_state_tuple_t * inRightLast)
+{
+    const FlagStateTupleInputIterator          lLeftFirst(inLeftFirst);
+    const FlagStateTupleInputIterator          lLeftLast(inLeftLast);
+    const FlagStateTupleInputIterator          lRightFirst(inRightFirst);
+    const FlagStateTupleInputIterator          lRightLast(inRightLast);
+    FlagStateTupleOutputNullAssignmentIterator lUnionFirst;
+    FlagStateTupleOutputNullAssignmentIterator lUnionLast;
+
+    lUnionLast = std::set_union(lLeftFirst,  lLeftLast,
+                                lRightFirst, lRightLast,
+                                lUnionFirst);
+
+    return (lUnionLast - lUnionFirst);
+}
+
+static void chkconfigFlagStateTupleCopyUnion(const chkconfig_flag_state_tuple_t * inLeftFirst,
+                                             const chkconfig_flag_state_tuple_t * inLeftLast,
+                                             const chkconfig_flag_state_tuple_t * inRightFirst,
+                                             const chkconfig_flag_state_tuple_t * inRightLast,
+                                             chkconfig_flag_state_tuple_t * inUnionFirst)
+{
+    const FlagStateTupleInputIterator      lLeftFirst(inLeftFirst);
+    const FlagStateTupleInputIterator      lLeftLast(inLeftLast);
+    const FlagStateTupleInputIterator      lRightFirst(inRightFirst);
+    const FlagStateTupleInputIterator      lRightLast(inRightLast);
+    FlagStateTupleOutputAssignmentIterator lUnionFirst(inUnionFirst);
+
+    std::set_union(lLeftFirst,  lLeftLast,
+                   lRightFirst, lRightLast,
+                   lUnionFirst);
+}
+
+static chkconfig_status_t chkconfigFlagStateTupleCopyUnion(chkconfig_flag_state_tuple_t *&inLeftFlagStateTuples,
+                                                           const size_t &inLeftCount,
+                                                           chkconfig_flag_state_tuple_t *&inRightFlagStateTuples,
+                                                           const size_t &inRightCount,
+                                                           chkconfig_flag_state_tuple_t *&outUnionFlagStateTuples,
+                                                           size_t &outUnionCount)
+{
+    const chkconfig_flag_state_tuple_t * lLeftFirst            = &inLeftFlagStateTuples[0];
+    const chkconfig_flag_state_tuple_t * lLeftLast             = (lLeftFirst + inLeftCount);
+    const chkconfig_flag_state_tuple_t * lRightFirst           = &inRightFlagStateTuples[0];
+    const chkconfig_flag_state_tuple_t * lRightLast            = (lRightFirst + inRightCount);
+    size_t                               lUnionCount           = 0;
+    chkconfig_flag_state_tuple_t *       lUnionFlagStateTuples = nullptr;
+    chkconfig_status_t                   lRetval               = CHKCONFIG_STATUS_SUCCESS;
+
+    // Sort the "left" flag/state tuples by flag.
+
+    qsort(&inLeftFlagStateTuples[0],
+          inLeftCount,
+          sizeof(chkconfig_flag_state_tuple_t),
+          FlagSortFunction);
+
+    // Sort the "right" flag/state tuples by flag.
+
+    qsort(&inRightFlagStateTuples[0],
+          inRightCount,
+          sizeof(chkconfig_flag_state_tuple_t),
+          FlagSortFunction);
+
+    // Run the union to get the count.
+
+    lUnionCount = chkconfigFlagStateTupleCountUnion(lLeftFirst,
+                                                    lLeftLast,
+                                                    lRightFirst,
+                                                    lRightLast);
+
+    // Allocate a new flag/state tuple array for the union result.
+
+    lRetval = chkconfigFlagStateTupleInit(lUnionFlagStateTuples, lUnionCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    // Run the union again to populate the union result.
+
+    chkconfigFlagStateTupleCopyUnion(lLeftFirst,
+                                     lLeftLast,
+                                     lRightFirst,
+                                     lRightLast,
+                                     &lUnionFlagStateTuples[0]);
+
+    outUnionFlagStateTuples = lUnionFlagStateTuples;
+    outUnionCount           = lUnionCount;
 
  done:
     return (lRetval);
@@ -639,44 +1048,6 @@ static chkconfig_status_t chkconfigStateGetCount(const char *inDirectoryPath,
     return (lRetval);
 }
 
-/**
- *  @brief
- *    Get the count of all flags covered by a backing store file.
- *
- *  This attempts to get a count of all flags covered by a backing
- *  store file.
- *
- *  @note
- *    Depending on runtime library options, the returned count may
- *    include only the state directory or both the default and state
- *    directories.
- *
- *  @param[in]   inContext        A reference to the chkconfig
- *                                library context for which to
- *                                get the count of all flags
- *                                covered by a backing store
- *                                file.
- *  @param[out]  outCount         A reference to storage by which
- *                                to return the count if successful.
- *
- *  @retval  CHKCONFIG_STATUS_SUCCESS  If successful.
- *
- *  @private
- *
- */
-static chkconfig_status_t chkconfigStateGetCount(chkconfig_context_t &inContext,
-                                                 size_t &outCount)
-{
-    chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
-
-    lRetval = chkconfigStateGetCount(inContext.m_options->m_state_dir,
-                                     outCount);
-    nlREQUIRE_SUCCESS(lRetval, done);
-
- done:
-    return (lRetval);
-}
-
 static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
                                                DIR *inDirectory,
                                                chkconfig_flag_state_tuple_t *&outFlagStateTuples,
@@ -760,7 +1131,7 @@ static chkconfig_status_t chkconfigStateCopyAll(const char *inDirectoryPath,
     {
         if (lFlagStateTuples != nullptr)
         {
-            chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lFlagStateTuples, lCount);
+            const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lFlagStateTuples, lCount);
             nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
         }
     }
@@ -774,16 +1145,187 @@ static chkconfig_status_t chkconfigStateCopyAll(const char *inDirectoryPath,
     return (lRetval);
 }
 
+static chkconfig_status_t chkconfigStateCopyAllWithDefaultDirectory(chkconfig_context_t &inContext,
+                                                                    chkconfig_flag_state_tuple_t *&outFlagStateTuples,
+                                                                    size_t &outCount)
+{
+    size_t                         lDefaultCount           = 0;
+    size_t                         lStateCount             = 0;
+    size_t                         lUnionCount             = 0;
+    chkconfig_flag_state_tuple_t * lDefaultFlagStateTuples = nullptr;
+    chkconfig_flag_state_tuple_t * lStateFlagStateTuples   = nullptr;
+    chkconfig_flag_state_tuple_t * lUnionFlagStateTuples   = nullptr;
+    chkconfig_status_t             lRetval                 = CHKCONFIG_STATUS_SUCCESS;
+
+    // Here, we need to consider a copy across both of the default and
+    // state directories. In the best case, either one or the other is
+    // empty. In the worst case, each contains a non-overlapping
+    // collection of backing files. To navigate between those case
+    // extremes the union must be copied.
+
+    lRetval = chkconfigStateCopyAll(inContext.m_options->m_default_dir,
+                                    lDefaultFlagStateTuples,
+                                    lDefaultCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    lRetval = chkconfigStateCopyAll(inContext.m_options->m_state_dir,
+                                    lStateFlagStateTuples,
+                                    lStateCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    // Explicitly pass the state tuples as the left-hand argument and
+    // the default tuples as the right-hand argument to ensure that
+    // the state values from the latter take precedence over the
+    // former.
+
+    lRetval = chkconfigFlagStateTupleCopyUnion(lStateFlagStateTuples,
+                                               lStateCount,
+                                               lDefaultFlagStateTuples,
+                                               lDefaultCount,                                              
+                                               lUnionFlagStateTuples,
+                                               lUnionCount);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    outFlagStateTuples = lUnionFlagStateTuples;
+    outCount           = lUnionCount;
+
+ done:
+    if (lDefaultFlagStateTuples != nullptr)
+    {
+        const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lDefaultFlagStateTuples, lDefaultCount);
+        nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
+    }
+
+    if (lStateFlagStateTuples != nullptr)
+    {
+        const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lStateFlagStateTuples, lStateCount);
+        nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
+    }
+
+    return (lRetval);
+}
+
+
 static chkconfig_status_t chkconfigStateCopyAll(chkconfig_context_t &inContext,
                                                 chkconfig_flag_state_tuple_t *&outFlagStateTuples,
                                                 size_t &outCount)
 {
-    chkconfig_status_t             lRetval = CHKCONFIG_STATUS_SUCCESS;
+    const bool         lUseDefaultDirectory = chkconfigUseDefaultDirectory(inContext);
+    chkconfig_status_t lRetval              = CHKCONFIG_STATUS_SUCCESS;
 
-    lRetval = chkconfigStateCopyAll(inContext.m_options->m_state_dir,
-                                    outFlagStateTuples,
-                                    outCount);
+    // The algorithmic approach here depends on library runtime options.
+    //
+    // If 'chkconfigUseDefaultDirectory' returns false, then it's a
+    // simple and straightforward enumeration and copy of the state
+    // directory.
+    //
+    // However, if 'chkconfigUseDefaultDirectory' returns true, then
+    // we have to consider BOTH the default and state directories and
+    // enumerate and copy the union thereof.
+
+    if (!lUseDefaultDirectory)
+    {
+        lRetval = chkconfigStateCopyAll(inContext.m_options->m_state_dir,
+                                        outFlagStateTuples,
+                                        outCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
+    }
+    else
+    {
+        lRetval = chkconfigStateCopyAllWithDefaultDirectory(inContext,
+                                                            outFlagStateTuples,
+                                                            outCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
+    }
+
+ done:
+    return (lRetval);
+}
+
+static chkconfig_status_t chkconfigStateGetCountWithDefaultDirectory(chkconfig_context_t &inContext,
+                                                                     size_t &outCount)
+{
+    chkconfig_flag_state_tuple_t * lUnionFlagStateTuples = nullptr;
+    size_t                         lUnionCount           = 0;
+    chkconfig_status_t             lRetval               = CHKCONFIG_STATUS_SUCCESS;
+
+    // Simply inovoke 'chkconfigStateCopyAllWithDefaultDirectory' and
+    // discard the tuples, while preserving the count since the
+    // algorithm is otherwise identical.
+
+    lRetval = chkconfigStateCopyAllWithDefaultDirectory(inContext,
+                                                        lUnionFlagStateTuples,
+                                                        lUnionCount);
     nlREQUIRE_SUCCESS(lRetval, done);
+
+    outCount = lUnionCount;
+
+ done:
+    if (lUnionFlagStateTuples != nullptr)
+    {
+        const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lUnionFlagStateTuples, lUnionCount);
+        nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
+    }
+
+    return (lRetval);
+}
+
+/**
+ *  @brief
+ *    Get the count of all flags covered by a backing store file.
+ *
+ *  This attempts to get a count of all flags covered by a backing
+ *  store file.
+ *
+ *  @note
+ *    Depending on runtime library options, the returned count may
+ *    include only the state directory or both the default and state
+ *    directories.
+ *
+ *  @param[in]   inContext        A reference to the chkconfig
+ *                                library context for which to
+ *                                get the count of all flags
+ *                                covered by a backing store
+ *                                file.
+ *  @param[out]  outCount         A reference to storage by which
+ *                                to return the count if successful.
+ *
+ *  @retval  CHKCONFIG_STATUS_SUCCESS  If successful.
+ *
+ *  @private
+ *
+ */
+static chkconfig_status_t chkconfigStateGetCount(chkconfig_context_t &inContext,
+                                                 size_t &outCount)
+{
+    const bool         lUseDefaultDirectory = chkconfigUseDefaultDirectory(inContext);
+    chkconfig_status_t lRetval              = CHKCONFIG_STATUS_SUCCESS;
+
+    // The algorithmic approach here depends on library runtime options.
+    //
+    // If 'chkconfigUseDefaultDirectory' returns false, then it's a
+    // simple and straightforward enumeration of the state directory.
+    //
+    // However, if 'chkconfigUseDefaultDirectory' returns true, then
+    // we have to consider BOTH the default and state directories. In
+    // the best case, either one or the other is empty. In the worst
+    // case, each contains a non-overlapping collection of backing
+    // files. To navigate between those case extremes, not only must
+    // both diretories be counted, but the flags must be deduplicated
+    // between them such that the count of the unique union is returned.
+
+    if (!lUseDefaultDirectory)
+    {
+        lRetval = chkconfigStateGetCount(inContext.m_options->m_state_dir,
+                                         outCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
+    }
+    else
+    {
+        lRetval = chkconfigStateGetCountWithDefaultDirectory(inContext,
+                                                             outCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
+    }
 
  done:
     return (lRetval);
