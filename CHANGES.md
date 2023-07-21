@@ -1,5 +1,22 @@
 # Changes and What's New in chkconfig
 
+#### 0.9.5 (2023-07-21)
+
+    * Addressed formatting issues with several options in the manual
+      reference page.
+
+    * Added new sorting and comparison functions to the library:
+      `chkconfig_flag_state_tuple_flag_compare_function` and
+      `chkconfig_flag_state_tuple_state_compare_function`.
+
+    * Added support for the flag/state origin concept and property in
+      the library along with the following new interfaces:
+      `chkconfig_state_get_with_origin` and
+      `chkconfig_origin_get_origin_string`.
+
+    * Added support for the *-o* / *--origin* command line option in
+      the `chkconfig` command line interface utility.
+
 #### 0.9.0 (2023-07-21)
 
     * Renamed `chkconfig_state_get_all` to `chkconfig_state_copy_all`
