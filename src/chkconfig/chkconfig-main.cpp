@@ -443,38 +443,6 @@ exit:
     return;
 }
 
-static int FlagSortFunction(const void *inLeft, const void *inRight)
-{
-    const chkconfig_flag_state_tuple_t *lLeftTuple  = static_cast<const chkconfig_flag_state_tuple_t *>(inLeft);
-    const chkconfig_flag_state_tuple_t *lRightTuple = static_cast<const chkconfig_flag_state_tuple_t *>(inRight);
-    int                                 lRetval;
-
-    lRetval = strcmp(lLeftTuple->m_flag, lRightTuple->m_flag);
-
-    return (lRetval);
-}
-
-static int StateSortFunction(const void *inLeft, const void *inRight)
-{
-    const chkconfig_flag_state_tuple_t *lLeftTuple  = static_cast<const chkconfig_flag_state_tuple_t *>(inLeft);
-    const chkconfig_flag_state_tuple_t *lRightTuple = static_cast<const chkconfig_flag_state_tuple_t *>(inRight);
-    int                                 lRetval;
-
-    // Compare the states as the primary sort key such that on / true
-    // sorts before off / false.
-
-    lRetval = lRightTuple->m_state - lLeftTuple->m_state;
-
-    // If the states are equal, then sort by flag as a secondary sort key.
-
-    if (lRetval == 0)
-    {
-        lRetval = FlagSortFunction(inLeft, inRight);
-    }
-
-    return (lRetval);
-}
-
 static chkconfig_status_t SortAllFlags(chkconfig_flag_state_tuple_t *&inFlagStateTuples,
                                        const size_t &inFlagStateTuplesCount,
                                        const uint32_t &inOptFlags)
@@ -484,11 +452,11 @@ static chkconfig_status_t SortAllFlags(chkconfig_flag_state_tuple_t *&inFlagStat
 
     if (inOptFlags & kChkconfigOptFlagState)
     {
-        lSortFunction = StateSortFunction;
+        lSortFunction = chkconfig_flag_state_tuple_state_compare_function;
     }
     else
     {
-        lSortFunction = FlagSortFunction;
+        lSortFunction = chkconfig_flag_state_tuple_flag_compare_function;
     }
 
     qsort(&inFlagStateTuples[0],
