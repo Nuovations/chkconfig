@@ -1181,7 +1181,7 @@ static chkconfig_status_t chkconfigStateCopyAllWithDefaultDirectory(chkconfig_co
     lRetval = chkconfigFlagStateTupleCopyUnion(lStateFlagStateTuples,
                                                lStateCount,
                                                lDefaultFlagStateTuples,
-                                               lDefaultCount,                                              
+                                               lDefaultCount,
                                                lUnionFlagStateTuples,
                                                lUnionCount);
     nlREQUIRE_SUCCESS(lRetval, done);
