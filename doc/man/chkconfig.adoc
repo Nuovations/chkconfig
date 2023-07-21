@@ -30,7 +30,7 @@ SYNOPSIS
 --------
 [verse]
 *chkconfig* [ *-hV* ]
-*chkconfig* [ *<directory options>* ] [ *-dsq* ]
+*chkconfig* [ *<directory options>* ] [ *-dosq* ]
 *chkconfig* [ *<directory options>* ] [ *-dq* ] <'flag'>
 *chkconfig* [ *<directory options>* ] [ *-fq* ] <'flag'> <*on* | *off*>
 
@@ -45,11 +45,13 @@ A flag is considered *on* if its backing file(s) contain the string
 'on' and *off* otherwise.
 
 When invoked with no arguments or additionally with the *-s* option
-(see *OPTIONS* below), 'chkconfig' prints to standard output the
-state (that is, *on* or *off*) of every flag found in the available
-backing files. Normally, the flags are shown sorted lexicographically
-by flag name. However, with the *-s* option, they are primary sorted
-by state, from *on* to *off*, and then secondarily by flag name.
+(see *OPTIONS* below), 'chkconfig' prints to standard output the state
+(that is, *on* or *off*) of every flag found in the available backing
+files. Normally, the flags are shown sorted lexicographically by flag
+name. However, with the *-s* option, they are primary sorted by state,
+from *on* to *off*, and then secondarily by flag name. Additionally,
+with the *-o* option, 'chkconfig' prints the origin of the flag state
+(see *ORIGIN* below).
 
 When invoked with a single 'flag' argument, 'chkconfig' exits with
 status 0 if 'flag' is *on* and with status 1 if 'flag' is *off*. This
@@ -84,10 +86,11 @@ information about options by running *chkconfig --help*.
 *--help*::
 	Show help information, including all options, and then exit.
 
-*-q*
+*-q*::
 *--quiet*::
 	Work silently, even if an error occurs.
-*-V*
+
+*-V*::
 *--version*::
 	Print version and copyright information and then exit.
 
@@ -97,24 +100,45 @@ information about options by running *chkconfig --help*.
 	Use 'DIR' directory as the read-only flag state fallback default
 	directory when a flag does not exist in the state directory
 	(default: /etc/config).
+
 *--state-directory 'DIR'*::
 	Use 'DIR' directory as the read-write flag state directory (default:
 	/var/config).
 
 .Check / Get / List options:
 
-*-d*
+*-d*::
 *--use-default-directory*::
 	Include the default directory as a fallback.
-*-s*
+
+*-o*::
+*--origin*::
+	Print the origin of every configuration flag.
+
+*-s*::
 *--state*::
-	Print the state of every configuration flag, sorting by state.
+	Print the state of every configuration flag, sorting by state, then
+        by flag.
 
 .Set options:
 
-*-f*
+*-f*::
 *--force*::
 	Forcibly create the specified flag state file if it does not exist.
+
+ORIGIN
+------
+
+The state of any configuration flag may come from one of three
+origins, as described in the table below.
+
+[options="header"]
+|=================
+| Origin | Description
+| *none* | The flag state origin does not exist and was defaulted to "off".
+| *default* | The flag state origin was from the default backing store.
+| *state* | The flag state origin was from the state backing store.
+|=================
 
 EXIT STATUS
 -----------
@@ -131,14 +155,16 @@ FILES
 [options="header"]
 |=================
 | File | Description
-| /etc/config | The read-only flag state fallback 'default' backing file directory to use when a flag does not exist in the 'state' directory.
-| /var/config | The read/write flag state backing file directory.
+| '/etc/config' | The read-only flag state fallback 'default' backing file directory to use when a flag does not exist in the 'state' directory.
+| '/var/config' | The read/write flag 'state' backing file directory.
 |=================
 
 NOTES
 -----
 
-'chkconfig' is inspired by and designed to work as a superset of the functionality of the same name that originally appeared on Silicon Graphics' (also known as, SGI) now-defunct IRIX operating system.
+'chkconfig' is inspired by and designed to work as a superset of the
+functionality of the same name that originally appeared on Silicon
+Graphics' (also known as, SGI) now-defunct IRIX operating system.
 
 AUTHOR
 ------
