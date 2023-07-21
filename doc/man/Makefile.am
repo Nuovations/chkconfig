@@ -74,8 +74,8 @@ CHKCONFIG_V_PROGRESS_XMLTO     = $(NL_V_PROGRESS) "XMLTO"    "$(@)"
 	$(NL_V_AT)$(ASCIIDOC) \
 	    --conf-file $(srcdir)/asciidoc.conf \
 	    --attribute manversion=$(PACKAGE_VERSION) \
-	    --attribute manmanual='Open HLX Manual' \
-	    --attribute mansource='Open HLX' \
+	    --attribute manmanual='chkconfig Manual' \
+	    --attribute mansource='chkconfig' \
 	    --backend docbook \
 	    --doctype manpage \
 	    -o $(@) $(<)
