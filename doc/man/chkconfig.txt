@@ -84,10 +84,11 @@ information about options by running *chkconfig --help*.
 *--help*::
 	Show help information, including all options, and then exit.
 
-*-q*
+*-q*::
 *--quiet*::
 	Work silently, even if an error occurs.
-*-V*
+
+*-V*::
 *--version*::
 	Print version and copyright information and then exit.
 
@@ -97,22 +98,23 @@ information about options by running *chkconfig --help*.
 	Use 'DIR' directory as the read-only flag state fallback default
 	directory when a flag does not exist in the state directory
 	(default: /etc/config).
+
 *--state-directory 'DIR'*::
 	Use 'DIR' directory as the read-write flag state directory (default:
 	/var/config).
 
 .Check / Get / List options:
 
-*-d*
+*-d*::
 *--use-default-directory*::
 	Include the default directory as a fallback.
-*-s*
+*-s*::
 *--state*::
 	Print the state of every configuration flag, sorting by state.
 
 .Set options:
 
-*-f*
+*-f*::
 *--force*::
 	Forcibly create the specified flag state file if it does not exist.
 
