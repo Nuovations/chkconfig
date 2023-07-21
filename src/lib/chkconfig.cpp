@@ -255,9 +255,15 @@ static const chkconfig_options_t sChkconfigOptionsDefault =
     .m_use_default_dir  = false,
     .m_default_dir      = CHKCONFIG_DEFAULTDIR_DEFAULT
 };
-static const char * const        sOffString               = "off";
-static const char * const        sOnString                = "on";
-
+static const char * const        sOffStateString          = "off";
+static const char * const        sOnStateString           = "on";
+static const char * const        sOriginStrings[]         =
+{
+    [CHKCONFIG_ORIGIN_UNKNOWN] = "unknown",
+    [CHKCONFIG_ORIGIN_NONE]    = "none",
+    [CHKCONFIG_ORIGIN_DEFAULT] = "default",
+    [CHKCONFIG_ORIGIN_STATE]   = "state"
+};
 
 // MARK: Flag/State Tuple Iterator Basis
 
@@ -359,8 +365,9 @@ FlagStateTupleOutputAssignmentIterator & FlagStateTupleOutputAssignmentIterator 
             free(const_cast<char *>(mFlagStateTuplePointer->m_flag));
         }
 
-        mFlagStateTuplePointer->m_flag  = strdup(inFlagStateTuple.m_flag);
-        mFlagStateTuplePointer->m_state = inFlagStateTuple.m_state;
+        mFlagStateTuplePointer->m_flag   = strdup(inFlagStateTuple.m_flag);
+        mFlagStateTuplePointer->m_state  = inFlagStateTuple.m_state;
+        mFlagStateTuplePointer->m_origin = inFlagStateTuple.m_origin;
     }
 
     return (*this);
@@ -426,11 +433,11 @@ static chkconfig_status_t chkconfigStateStringGetState(const char *inStateString
 
     nlREQUIRE_ACTION(inStateString != nullptr, done, lRetval = -EINVAL);
 
-    if (strncasecmp(inStateString, sOnString, strlen(sOnString)) == 0)
+    if (strncasecmp(inStateString, sOnStateString, strlen(sOnStateString)) == 0)
     {
         outState = true;
     }
-    else if (strncasecmp(inStateString, sOffString, strlen(sOffString)) == 0)
+    else if (strncasecmp(inStateString, sOffStateString, strlen(sOffStateString)) == 0)
     {
         outState = false;
     }
@@ -443,12 +450,36 @@ static chkconfig_status_t chkconfigStateStringGetState(const char *inStateString
     return (lRetval);
 }
 
+static chkconfig_status_t chkconfigOriginGetOriginString(const chkconfig_origin_t &inOrigin,
+                                                         const char *&outOriginString)
+{
+    chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
+
+    switch (inOrigin)
+    {
+
+    case CHKCONFIG_ORIGIN_UNKNOWN:
+    case CHKCONFIG_ORIGIN_NONE:
+    case CHKCONFIG_ORIGIN_DEFAULT:
+    case CHKCONFIG_ORIGIN_STATE:
+        outOriginString = sOriginStrings[inOrigin];
+        break;
+
+    default:
+        lRetval = -EINVAL;
+        break;
+
+    }
+
+    return (lRetval);
+}
+
 static chkconfig_status_t chkconfigStateGetStateString(const chkconfig_state_t &inState,
                                                        const char *&outStateString)
 {
     chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
 
-    outStateString = ((inState) ? sOnString : sOffString);
+    outStateString = ((inState) ? sOnStateString : sOffStateString);
 
     return (lRetval);
 }
@@ -774,9 +805,11 @@ static chkconfig_status_t chkconfigOptionsSet(chkconfig_context_t &inContext,
 
 // MARK: Observers
 
-static chkconfig_status_t chkconfigStateGet(const char *inFlagPath,
+static chkconfig_status_t chkconfigStateGet(const chkconfig_origin_t &inOrigin,
+                                            const bool &inNonexistentIsAnError,
+                                            const char *inFlagPath,
                                             chkconfig_state_t &outState,
-                                            const bool &inUseDefaultDirectory)
+                                            chkconfig_origin_t &outOrigin)
 {
     int                lStatus;
     int                lDescriptor = -1;
@@ -798,14 +831,15 @@ static chkconfig_status_t chkconfigStateGet(const char *inFlagPath,
 
                     case ENOENT:
                         outState = false;
+                        outOrigin = CHKCONFIG_ORIGIN_NONE;
 
-                        // If called with inUseDefaultDirectory
+                        // If called with inNonexistentIsAnError
                         // asserted, then the caller does NOT want the
-                        // return value "hidden" to success such that
+                        // return value "hidden" by success such that
                         // they can fallback to the default directory
                         // on failure.
 
-                        if (inUseDefaultDirectory)
+                        if (inNonexistentIsAnError)
                         {
                             lRetval = -errno;
                         }
@@ -842,7 +876,8 @@ static chkconfig_status_t chkconfigStateGet(const char *inFlagPath,
         lState = false;
     }
 
-    outState = lState;
+    outState  = lState;
+    outOrigin = inOrigin;
 
  done:
     if (lData != MAP_FAILED)
@@ -931,7 +966,8 @@ static bool chkconfigUseDefaultDirectory(const chkconfig_context_t &inContext)
 
 static chkconfig_status_t chkconfigStateGet(chkconfig_context_t &inContext,
                                             const chkconfig_flag_t &inFlag,
-                                            chkconfig_state_t &outState)
+                                            chkconfig_state_t &outState,
+                                            chkconfig_origin_t &outOrigin)
 {
     const bool         lUseDefaultDirectory = chkconfigUseDefaultDirectory(inContext);
     char               lFlagPath[PATH_MAX];
@@ -946,9 +982,11 @@ static chkconfig_status_t chkconfigStateGet(chkconfig_context_t &inContext,
                                      &lFlagPath[0]);
     nlREQUIRE_SUCCESS(lRetval, done);
 
-    lRetval = chkconfigStateGet(lFlagPath,
+    lRetval = chkconfigStateGet(CHKCONFIG_ORIGIN_STATE,
+                                lUseDefaultDirectory,
+                                lFlagPath,
                                 outState,
-                                lUseDefaultDirectory);
+                                outOrigin);
 
     // If that failed and the caller wants to use the default
     // directory, make a second attempt with the default directory
@@ -963,7 +1001,11 @@ static chkconfig_status_t chkconfigStateGet(chkconfig_context_t &inContext,
 
         nlREQUIRE_SUCCESS(lRetval, done);
 
-        lRetval = chkconfigStateGet(lFlagPath, outState, !lUseDefaultDirectory);
+        lRetval = chkconfigStateGet(CHKCONFIG_ORIGIN_DEFAULT,
+                                    !lUseDefaultDirectory,
+                                    lFlagPath,
+                                    outState,
+                                    outOrigin);
     }
 
  done:
@@ -985,7 +1027,8 @@ static chkconfig_status_t chkconfigStateGetMultiple(chkconfig_context_t &inConte
     {
         lRetval = chkconfigStateGet(inContext,
                                     lCurrent->m_flag,
-                                    lCurrent->m_state);
+                                    lCurrent->m_state,
+                                    lCurrent->m_origin);
         nlREQUIRE_SUCCESS(lRetval, done);
 
         lCurrent++;
@@ -1067,7 +1110,8 @@ static chkconfig_status_t chkconfigStateGetCount(const char *inDirectoryPath,
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
+static chkconfig_status_t chkconfigStateGetAll(const chkconfig_origin_t &inOrigin,
+                                               const char *inDirectoryPath,
                                                DIR *inDirectory,
                                                chkconfig_flag_state_tuple_t *&outFlagStateTuples,
                                                const size_t &inCount)
@@ -1098,7 +1142,11 @@ static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
         {
             constexpr bool lUseDefaultDirectory = true;
 
-            lRetval = chkconfigStateGet(lFlagPath, outFlagStateTuples[lIndex].m_state, !lUseDefaultDirectory);
+            lRetval = chkconfigStateGet(inOrigin,
+                                        !lUseDefaultDirectory,
+                                        lFlagPath,
+                                        outFlagStateTuples[lIndex].m_state,
+                                        outFlagStateTuples[lIndex].m_origin);
             nlREQUIRE_SUCCESS(lRetval, done);
 
             outFlagStateTuples[lIndex].m_flag = strdup(lDirent->d_name);
@@ -1112,7 +1160,8 @@ static chkconfig_status_t chkconfigStateGetAll(const char *inDirectoryPath,
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigStateCopyAll(const char *inDirectoryPath,
+static chkconfig_status_t chkconfigStateCopyAll(const chkconfig_origin_t &inOrigin,
+                                                const char *inDirectoryPath,
                                                 chkconfig_flag_state_tuple_t *&outFlagStateTuples,
                                                 size_t &outCount)
 {
@@ -1132,7 +1181,8 @@ static chkconfig_status_t chkconfigStateCopyAll(const char *inDirectoryPath,
     lDirectory = opendir(inDirectoryPath);
     nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
 
-    lRetval = chkconfigStateGetAll(inDirectoryPath,
+    lRetval = chkconfigStateGetAll(inOrigin,
+                                   inDirectoryPath,
                                    lDirectory,
                                    lFlagStateTuples,
                                    lCount);
@@ -1182,12 +1232,14 @@ static chkconfig_status_t chkconfigStateCopyAllWithDefaultDirectory(chkconfig_co
     // collection of backing files. To navigate between those case
     // extremes the union must be copied.
 
-    lRetval = chkconfigStateCopyAll(inContext.m_options->m_default_dir,
+    lRetval = chkconfigStateCopyAll(CHKCONFIG_ORIGIN_DEFAULT,
+                                    inContext.m_options->m_default_dir,
                                     lDefaultFlagStateTuples,
                                     lDefaultCount);
     nlREQUIRE_SUCCESS(lRetval, done);
 
-    lRetval = chkconfigStateCopyAll(inContext.m_options->m_state_dir,
+    lRetval = chkconfigStateCopyAll(CHKCONFIG_ORIGIN_STATE,
+                                    inContext.m_options->m_state_dir,
                                     lStateFlagStateTuples,
                                     lStateCount);
     nlREQUIRE_SUCCESS(lRetval, done);
@@ -1244,7 +1296,8 @@ static chkconfig_status_t chkconfigStateCopyAll(chkconfig_context_t &inContext,
 
     if (!lUseDefaultDirectory)
     {
-        lRetval = chkconfigStateCopyAll(inContext.m_options->m_state_dir,
+        lRetval = chkconfigStateCopyAll(CHKCONFIG_ORIGIN_STATE,
+                                        inContext.m_options->m_state_dir,
                                         outFlagStateTuples,
                                         outCount);
         nlREQUIRE_SUCCESS(lRetval, done);
@@ -1672,6 +1725,7 @@ chkconfig_status_t chkconfig_options_set(chkconfig_context_pointer_t context_poi
  *  @retval  -ENOENT                   If the backing file associated
  *                                     with @a flag does not exist.
  *
+ *  @sa chkconfig_state_get_with_origin
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get_multiple
  *  @sa chkconfig_state_copy_all
@@ -1683,14 +1737,68 @@ chkconfig_status_t chkconfig_state_get(chkconfig_context_pointer_t context_point
                                        chkconfig_flag_t flag,
                                        chkconfig_state_t *state)
 {
+    chkconfig_origin_t origin;
     chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
 
     nlREQUIRE_ACTION(context_pointer != nullptr, done, retval = -EINVAL);
     nlREQUIRE_ACTION(state           != nullptr, done, retval = -EINVAL);
 
+    retval = chkconfig_state_get_with_origin(context_pointer,
+                                             flag,
+                                             state,
+                                             &origin);
+
+ done:
+    return (retval);
+}
+
+/**
+ *  @brief
+ *    Get the state and origin values  associated with a flag.
+ *
+ *  This attempts to get the state and origin values associated with
+ *  the specified flag.
+ *
+ *  @param[in]   context_pointer  A pointer to the chkconfig library
+ *                                context for which to get the state
+ *                                and origin values for the specified
+ *                                flag.
+ *  @param[in]   flag             The flag for which to get the associated
+ *                                state and origin values..
+ *  @param[out]  state            A pointer to storage by which to return
+ *                                the state value if successful.
+ *  @param[out]  origin           A pointer to storage by which to return
+ *                                the origin value if successful.
+ *
+ *  @retval  CHKCONFIG_STATUS_SUCCESS  If successful.
+ *  @retval  -EINVAL                   If @a context_pointer, @a
+ *                                     state, or @a origin is null.
+ *  @retval  -ENOENT                   If the backing file associated
+ *                                     with @a flag does not exist.
+ *
+ *  @sa chkconfig_state_get
+ *  @sa chkconfig_state_get_count
+ *  @sa chkconfig_state_get_multiple
+ *  @sa chkconfig_state_copy_all
+ *
+ *  @ingroup observers
+ *
+ */
+chkconfig_status_t chkconfig_state_get_with_origin(chkconfig_context_pointer_t context_pointer,
+                                                   chkconfig_flag_t flag,
+                                                   chkconfig_state_t *state,
+                                                   chkconfig_origin_t *origin)
+{
+    chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
+
+    nlREQUIRE_ACTION(context_pointer != nullptr, done, retval = -EINVAL);
+    nlREQUIRE_ACTION(state           != nullptr, done, retval = -EINVAL);
+    nlREQUIRE_ACTION(origin          != nullptr, done, retval = -EINVAL);
+
     retval = Detail::chkconfigStateGet(*context_pointer,
                                        flag,
-                                       *state);
+                                       *state,
+                                       *origin);
 
  done:
     return (retval);
@@ -1956,6 +2064,40 @@ chkconfig_status_t chkconfig_state_set_multiple(chkconfig_context_pointer_t cont
 }
 
 // MARK: Utility
+
+/**
+ *  @brief
+ *    Attempt to convert an origin value into an origin string.
+ *
+ *  This routine attempts to convert the specified origin value
+ *  into a null-terminated C origin string.
+
+ *
+ *  @param[in]   origin         The origin value for which to get the
+ *                              corresponding null-terminated C string.
+ *  @param[out]  origin_string  A pointer to storage for a pointer to an
+ *                              immutable null-terminated C string by
+ *                              which the origin string if successful.
+ *
+ *  @retval  CHKCONFIG_STATUS_SUCCESS  If successful.
+ *  @retval  -EINVAL                   If @a state is null.
+ *
+ *  @ingroup utility
+ *
+ */
+chkconfig_status_t chkconfig_origin_get_origin_string(chkconfig_origin_t origin,
+                                                      const char **origin_string)
+{
+    chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
+
+    nlREQUIRE_ACTION(origin_string != nullptr, done, retval = -EINVAL);
+
+    retval = Detail::chkconfigOriginGetOriginString(origin,
+                                                    *origin_string);
+
+ done:
+    return (retval);
+}
 
 /**
  *  @brief

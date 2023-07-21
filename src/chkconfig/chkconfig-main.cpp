@@ -48,23 +48,26 @@
 #define CHKCONFIG_OPT_USE_DEFAULT_DIRECTORY            'd'
 #define CHKCONFIG_OPT_FORCE                            'f'
 #define CHKCONFIG_OPT_HELP                             'h'
+#define CHKCONFIG_OPT_ORIGIN                           'o'
 #define CHKCONFIG_OPT_QUIET                            'q'
 #define CHKCONFIG_OPT_STATE                            's'
 #define CHKCONFIG_OPT_VERSION                          'V'
 #define CHKCONFIG_OPT_DEFAULT_DIRECTORY                (CHKCONFIG_OPT_BASE +  1)
 #define CHKCONFIG_OPT_STATE_DIRECTORY                  (CHKCONFIG_OPT_BASE +  2)
 
-#define CHKCONFIG_SHORT_OPTIONS                        "+dfhqsV"
+#define CHKCONFIG_SHORT_OPTIONS                        "+dfhoqsV"
 
 // MARK: List Output Formatting
 
 #define CHKCONFIG_LIST_FLAG_FORMAT                     "%-19s"
 #define CHKCONFIG_LIST_COLUMN_SEPARATOR                "  "
 #define CHKCONFIG_LIST_STATE_FORMAT                    "%-5s"
+#define CHKCONFIG_LIST_ORIGIN_FORMAT                   "%-10s"
 
 #define CHKCONFIG_LIST_HEADER_FLAG_FORMAT              CHKCONFIG_LIST_FLAG_FORMAT
 #define CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR         CHKCONFIG_LIST_COLUMN_SEPARATOR
 #define CHKCONFIG_LIST_HEADER_STATE_FORMAT             CHKCONFIG_LIST_STATE_FORMAT
+#define CHKCONFIG_LIST_HEADER_ORIGIN_FORMAT            CHKCONFIG_LIST_ORIGIN_FORMAT
 
 #define CHKCONFIG_LIST_HEADER_FLAG_STATE_FORMAT        \
     CHKCONFIG_LIST_HEADER_FLAG_FORMAT                  \
@@ -72,18 +75,38 @@
     CHKCONFIG_LIST_HEADER_STATE_FORMAT                 \
     "\n"
 
+#define CHKCONFIG_LIST_HEADER_FLAG_STATE_ORIGIN_FORMAT \
+    CHKCONFIG_LIST_HEADER_FLAG_FORMAT                  \
+    CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR             \
+    CHKCONFIG_LIST_HEADER_STATE_FORMAT                 \
+    CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR             \
+    CHKCONFIG_LIST_HEADER_ORIGIN_FORMAT                \
+    "\n"
+
 #define CHKCONFIG_LIST_HEADER_FLAG_VALUE               "Flag"
 #define CHKCONFIG_LIST_HEADER_FLAG_SEPARATOR_VALUE     "===="
 #define CHKCONFIG_LIST_HEADER_STATE_VALUE              "State"
 #define CHKCONFIG_LIST_HEADER_STATE_SEPARATOR_VALUE    "====="
+#define CHKCONFIG_LIST_HEADER_ORIGIN_VALUE             "Origin"
+#define CHKCONFIG_LIST_HEADER_ORIGIN_SEPARATOR_VALUE   "======"
+
 #define CHKCONFIG_LIST_ROW_FLAG_FORMAT                 CHKCONFIG_LIST_FLAG_FORMAT
 #define CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR            CHKCONFIG_LIST_COLUMN_SEPARATOR
 #define CHKCONFIG_LIST_ROW_STATE_FORMAT                CHKCONFIG_LIST_STATE_FORMAT
+#define CHKCONFIG_LIST_ROW_ORIGIN_FORMAT               CHKCONFIG_LIST_ORIGIN_FORMAT
 
 #define CHKCONFIG_LIST_ROW_FLAG_STATE_FORMAT           \
     CHKCONFIG_LIST_ROW_FLAG_FORMAT                     \
     CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR                \
     CHKCONFIG_LIST_ROW_STATE_FORMAT                    \
+    "\n"
+
+#define CHKCONFIG_LIST_ROW_FLAG_STATE_ORIGIN_FORMAT    \
+    CHKCONFIG_LIST_ROW_FLAG_FORMAT                     \
+    CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR                \
+    CHKCONFIG_LIST_ROW_STATE_FORMAT                    \
+    CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR                \
+    CHKCONFIG_LIST_ROW_ORIGIN_FORMAT                   \
     "\n"
 
 namespace nuovations
@@ -100,11 +123,12 @@ enum
 
     kChkconfigOptFlagForce                = 0x00000001,
     kChkconfigOptFlagListAll              = 0x00000002,
-    kChkconfigOptFlagQuiet                = 0x00000004,
-    kChkconfigOptFlagState                = 0x00000008,
-    kChkconfigOptFlagUseDefaultDirectory  = 0x00000010,
-    kChkconfigOptFlagWantDefaultDirectory = 0x00000020,
-    kChkconfigOptFlagWantStateDirectory   = 0x00000040
+    kChkconfigOptFlagOrigin               = 0x00000004,
+    kChkconfigOptFlagQuiet                = 0x00000008,
+    kChkconfigOptFlagState                = 0x00000010,
+    kChkconfigOptFlagUseDefaultDirectory  = 0x00000020,
+    kChkconfigOptFlagWantDefaultDirectory = 0x00000040,
+    kChkconfigOptFlagWantStateDirectory   = 0x00000080
 };
 
 // MARK: Global Variables
@@ -161,6 +185,13 @@ static const struct option sOptions[]          = {
     },
 
     {
+        "origin",
+        no_argument,
+        nullptr,
+        CHKCONFIG_OPT_ORIGIN
+    },
+
+    {
         "state",
         no_argument,
         nullptr,
@@ -212,8 +243,9 @@ static const char * const  sLongUsageString  =
 " Check / Get / List Options:\n"
 "\n"
 "  -d, --use-default-directory  Include the default directory as a fallback.\n"
+"  -o, --origin                 Print the origin of every configuration flag.\n"
 "  -s, --state                  Print the state of every configuration flag,\n"
-"                               sorting by state.\n"
+"                               sorting by state, then by flag.\n"
 "\n"
 " Set Options:\n"
 "\n"
@@ -329,6 +361,10 @@ static void ProcessArguments(
             PrintUsage(inProgram, EXIT_SUCCESS);
             break;
 
+        case CHKCONFIG_OPT_ORIGIN:
+            sOptFlags |= (kChkconfigOptFlagListAll | kChkconfigOptFlagOrigin);
+            break;
+
         case CHKCONFIG_OPT_QUIET:
             sOptFlags |= kChkconfigOptFlagQuiet;
             break;
@@ -405,7 +441,14 @@ static void ProcessArguments(
 
     case 1:
     case 2:
-        if (sOptFlags & kChkconfigOptFlagState)
+        if (sOptFlags & kChkconfigOptFlagOrigin)
+        {
+            PrintError("The '-o/--origin' option is mutally exclusive with the check usage; please use one or the other.\n");
+
+            errors++;
+            break;
+        }
+        else if (sOptFlags & kChkconfigOptFlagState)
         {
             PrintError("The '-s/--state' option is mutally exclusive with the check usage; please use one or the other.\n");
 
@@ -491,6 +534,20 @@ static void ListFlagStateHeader(void)
             CHKCONFIG_LIST_HEADER_STATE_SEPARATOR_VALUE);
 }
 
+static void ListFlagStateOriginHeader(void)
+{
+    fprintf(stdout,
+            CHKCONFIG_LIST_HEADER_FLAG_STATE_ORIGIN_FORMAT,
+            CHKCONFIG_LIST_HEADER_FLAG_VALUE,
+            CHKCONFIG_LIST_HEADER_STATE_VALUE,
+            CHKCONFIG_LIST_HEADER_ORIGIN_VALUE);
+    fprintf(stdout,
+            CHKCONFIG_LIST_HEADER_FLAG_STATE_ORIGIN_FORMAT,
+            CHKCONFIG_LIST_HEADER_FLAG_SEPARATOR_VALUE,
+            CHKCONFIG_LIST_HEADER_STATE_SEPARATOR_VALUE,
+            CHKCONFIG_LIST_HEADER_ORIGIN_SEPARATOR_VALUE);
+}
+
 static chkconfig_status_t ListFlagStateOne(const chkconfig_flag_state_tuple_t &inFlagStateTuple)
 {
     const char *       lStateString;
@@ -508,7 +565,30 @@ static chkconfig_status_t ListFlagStateOne(const chkconfig_flag_state_tuple_t &i
     return (lRetval);
 }
 
-static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
+static chkconfig_status_t ListFlagStateOriginOne(const chkconfig_flag_state_tuple_t &inFlagStateTuple)
+{
+    const char *       lStateString;
+    const char *       lOriginString;
+    chkconfig_status_t lRetval  = CHKCONFIG_STATUS_SUCCESS;
+
+    lRetval = chkconfig_state_get_state_string(inFlagStateTuple.m_state, &lStateString);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    lRetval = chkconfig_origin_get_origin_string(inFlagStateTuple.m_origin, &lOriginString);
+    nlREQUIRE_SUCCESS(lRetval, done);
+
+    fprintf(stdout,
+            CHKCONFIG_LIST_ROW_FLAG_STATE_ORIGIN_FORMAT,
+            inFlagStateTuple.m_flag,
+            lStateString,
+            lOriginString);
+
+ done:
+    return (lRetval);
+}
+
+static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext,
+                                       const uint32_t &inOptFlags)
 {
     chkconfig_flag_state_tuple_t *       lFlagStateTuples = nullptr;
     size_t                               lFlagStateTuplesCount;
@@ -527,10 +607,17 @@ static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
     // specified. By default, flags are shown sorted by flag name; if
     // the '-s' option is asserted, then sort them by state.
 
-    lRetval = SortAllFlags(lFlagStateTuples, lFlagStateTuplesCount, sOptFlags);
+    lRetval = SortAllFlags(lFlagStateTuples, lFlagStateTuplesCount, inOptFlags);
     nlREQUIRE_SUCCESS(lRetval, done);
 
-    ListFlagStateHeader();
+    if (inOptFlags & kChkconfigOptFlagOrigin)
+    {
+        ListFlagStateOriginHeader();
+    }
+    else
+    {
+        ListFlagStateHeader();
+    }
 
     lFirst   = &lFlagStateTuples[0];
     lLast    = lFirst + lFlagStateTuplesCount;
@@ -538,8 +625,16 @@ static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
 
     while (lCurrent != lLast)
     {
-        lRetval = ListFlagStateOne(*lCurrent);
-        nlREQUIRE_SUCCESS(lRetval, done);
+        if (inOptFlags & kChkconfigOptFlagOrigin)
+        {
+            lRetval = ListFlagStateOriginOne(*lCurrent);
+            nlREQUIRE_SUCCESS(lRetval, done);
+        }
+        else
+        {
+            lRetval = ListFlagStateOne(*lCurrent);
+            nlREQUIRE_SUCCESS(lRetval, done);
+        }
 
         lCurrent++;
     }
@@ -693,7 +788,7 @@ static chkconfig_status_t Main(int &argc, char * const argv[])
 
     if ((sOptFlags & kChkconfigOptFlagListAll) && (sFlagString == nullptr))
     {
-        lRetval = ListAllFlags(*lContextPointer);
+        lRetval = ListAllFlags(*lContextPointer, sOptFlags);
     }
     else if (sFlagString != nullptr)
     {

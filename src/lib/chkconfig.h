@@ -77,13 +77,31 @@ typedef const char *                       chkconfig_flag_t;
 typedef bool                               chkconfig_state_t;
 
 /**
+ *  An enumeration indicating the origin of a flag state.
+ *
+ */
+typedef enum
+{
+    CHKCONFIG_ORIGIN_UNKNOWN = 0, //!< The flag state origin is unknown.
+
+    CHKCONFIG_ORIGIN_NONE    = 1, //!< The flag state origin does not exist.
+
+    CHKCONFIG_ORIGIN_DEFAULT = 2, //!< The flag state origin was from the
+                                  //!< default backing store.
+
+    CHKCONFIG_ORIGIN_STATE   = 3  //!< The flag state origin was from the
+                                  //!< state backing store.
+} chkconfig_origin_t;
+
+/**
  *  A structure for manipulating a state flag and value as a pair.
  *
  */
 struct chkconfig_flag_state_tuple
 {
-    chkconfig_flag_t  m_flag;   //!< The flag.
-    chkconfig_state_t m_state;  //!< The state value associated with the flag.
+    chkconfig_flag_t   m_flag;   //!< The flag.
+    chkconfig_state_t  m_state;  //!< The state value associated with the flag.
+    chkconfig_origin_t m_origin; //!< The origin of the flag state.
 };
 
 /**
@@ -249,6 +267,9 @@ typedef uint32_t chkconfig_option_t;
 
 // MARK: Utility
 
+extern chkconfig_status_t chkconfig_origin_get_origin_string(chkconfig_origin_t origin,
+                                                             const char **origin_string);
+
 extern chkconfig_status_t chkconfig_state_string_get_state(const char *state_string,
                                                            chkconfig_state_t *state);
 extern chkconfig_status_t chkconfig_state_get_state_string(chkconfig_state_t state,
@@ -284,6 +305,11 @@ extern chkconfig_status_t chkconfig_options_set(chkconfig_context_pointer_t cont
 extern chkconfig_status_t chkconfig_state_get(chkconfig_context_pointer_t context_pointer,
                                               chkconfig_flag_t flag,
                                               chkconfig_state_t *state);
+extern chkconfig_status_t chkconfig_state_get_with_origin(chkconfig_context_pointer_t context_pointer,
+                                                          chkconfig_flag_t flag,
+                                                          chkconfig_state_t *state,
+                                                          chkconfig_origin_t *origin);
+
 extern chkconfig_status_t chkconfig_state_get_multiple(chkconfig_context_pointer_t context_pointer,
                                                        chkconfig_flag_state_tuple_t *flag_state_tuples,
                                                        size_t count);
