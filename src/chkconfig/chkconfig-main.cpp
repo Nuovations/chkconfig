@@ -41,37 +41,49 @@
 
 // MARK: Preprocessor Definitions
 
-#define CHKCONFIG_OPT_BASE                     0x1000
+// MARK: Command Line Options
 
-#define CHKCONFIG_OPT_USE_DEFAULT_DIRECTORY    'd'
-#define CHKCONFIG_OPT_FORCE                    'f'
-#define CHKCONFIG_OPT_HELP                     'h'
-#define CHKCONFIG_OPT_QUIET                    'q'
-#define CHKCONFIG_OPT_STATE                    's'
-#define CHKCONFIG_OPT_VERSION                  'V'
-#define CHKCONFIG_OPT_DEFAULT_DIRECTORY        (CHKCONFIG_OPT_BASE +  1)
-#define CHKCONFIG_OPT_STATE_DIRECTORY          (CHKCONFIG_OPT_BASE +  2)
+#define CHKCONFIG_OPT_BASE                             0x1000
 
-#define CHKCONFIG_SHORT_OPTIONS                "+dfhqsV"
+#define CHKCONFIG_OPT_USE_DEFAULT_DIRECTORY            'd'
+#define CHKCONFIG_OPT_FORCE                            'f'
+#define CHKCONFIG_OPT_HELP                             'h'
+#define CHKCONFIG_OPT_QUIET                            'q'
+#define CHKCONFIG_OPT_STATE                            's'
+#define CHKCONFIG_OPT_VERSION                          'V'
+#define CHKCONFIG_OPT_DEFAULT_DIRECTORY                (CHKCONFIG_OPT_BASE +  1)
+#define CHKCONFIG_OPT_STATE_DIRECTORY                  (CHKCONFIG_OPT_BASE +  2)
 
-#define CHKCONFIG_LIST_HEADER_FLAG_FORMAT      "%-19s"
-#define CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR "  "
-#define CHKCONFIG_LIST_HEADER_STATE_FORMAT     "%-5s"
+#define CHKCONFIG_SHORT_OPTIONS                        "+dfhqsV"
 
-#define CHKCONFIG_LIST_HEADER_FORMAT           \
-    CHKCONFIG_LIST_HEADER_FLAG_FORMAT          \
-    CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR     \
-    CHKCONFIG_LIST_HEADER_STATE_FORMAT         \
+// MARK: List Output Formatting
+
+#define CHKCONFIG_LIST_FLAG_FORMAT                     "%-19s"
+#define CHKCONFIG_LIST_COLUMN_SEPARATOR                "  "
+#define CHKCONFIG_LIST_STATE_FORMAT                    "%-5s"
+
+#define CHKCONFIG_LIST_HEADER_FLAG_FORMAT              CHKCONFIG_LIST_FLAG_FORMAT
+#define CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR         CHKCONFIG_LIST_COLUMN_SEPARATOR
+#define CHKCONFIG_LIST_HEADER_STATE_FORMAT             CHKCONFIG_LIST_STATE_FORMAT
+
+#define CHKCONFIG_LIST_HEADER_FLAG_STATE_FORMAT        \
+    CHKCONFIG_LIST_HEADER_FLAG_FORMAT                  \
+    CHKCONFIG_LIST_HEADER_COLUMN_SEPARATOR             \
+    CHKCONFIG_LIST_HEADER_STATE_FORMAT                 \
     "\n"
 
-#define CHKCONFIG_LIST_ROW_FLAG_FORMAT         "%-19s"
-#define CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR    "  "
-#define CHKCONFIG_LIST_ROW_STATE_FORMAT        "%-5s"
+#define CHKCONFIG_LIST_HEADER_FLAG_VALUE               "Flag"
+#define CHKCONFIG_LIST_HEADER_FLAG_SEPARATOR_VALUE     "===="
+#define CHKCONFIG_LIST_HEADER_STATE_VALUE              "State"
+#define CHKCONFIG_LIST_HEADER_STATE_SEPARATOR_VALUE    "====="
+#define CHKCONFIG_LIST_ROW_FLAG_FORMAT                 CHKCONFIG_LIST_FLAG_FORMAT
+#define CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR            CHKCONFIG_LIST_COLUMN_SEPARATOR
+#define CHKCONFIG_LIST_ROW_STATE_FORMAT                CHKCONFIG_LIST_STATE_FORMAT
 
-#define CHKCONFIG_LIST_ROW_FORMAT              \
-    CHKCONFIG_LIST_ROW_FLAG_FORMAT             \
-    CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR        \
-    CHKCONFIG_LIST_ROW_STATE_FORMAT            \
+#define CHKCONFIG_LIST_ROW_FLAG_STATE_FORMAT           \
+    CHKCONFIG_LIST_ROW_FLAG_FORMAT                     \
+    CHKCONFIG_LIST_ROW_COLUMN_SEPARATOR                \
+    CHKCONFIG_LIST_ROW_STATE_FORMAT                    \
     "\n"
 
 namespace nuovations
@@ -467,13 +479,19 @@ static chkconfig_status_t SortAllFlags(chkconfig_flag_state_tuple_t *&inFlagStat
     return (lRetval);
 }
 
-static void ListHeader(void)
+static void ListFlagStateHeader(void)
 {
-    fprintf(stdout, CHKCONFIG_LIST_HEADER_FORMAT, "Flag", "State");
-    fprintf(stdout, CHKCONFIG_LIST_HEADER_FORMAT, "====", "=====");
+    fprintf(stdout,
+            CHKCONFIG_LIST_HEADER_FLAG_STATE_FORMAT,
+            CHKCONFIG_LIST_HEADER_FLAG_VALUE,
+            CHKCONFIG_LIST_HEADER_STATE_VALUE);
+    fprintf(stdout,
+            CHKCONFIG_LIST_HEADER_FLAG_STATE_FORMAT,
+            CHKCONFIG_LIST_HEADER_FLAG_SEPARATOR_VALUE,
+            CHKCONFIG_LIST_HEADER_STATE_SEPARATOR_VALUE);
 }
 
-static chkconfig_status_t ListOne(const chkconfig_flag_state_tuple_t &inFlagStateTuple)
+static chkconfig_status_t ListFlagStateOne(const chkconfig_flag_state_tuple_t &inFlagStateTuple)
 {
     const char *       lStateString;
     chkconfig_status_t lRetval  = CHKCONFIG_STATUS_SUCCESS;
@@ -481,7 +499,10 @@ static chkconfig_status_t ListOne(const chkconfig_flag_state_tuple_t &inFlagStat
     lRetval = chkconfig_state_get_state_string(inFlagStateTuple.m_state, &lStateString);
     nlREQUIRE_SUCCESS(lRetval, done);
 
-    fprintf(stdout, CHKCONFIG_LIST_ROW_FORMAT, inFlagStateTuple.m_flag, lStateString);
+    fprintf(stdout,
+            CHKCONFIG_LIST_ROW_FLAG_STATE_FORMAT,
+            inFlagStateTuple.m_flag,
+            lStateString);
 
  done:
     return (lRetval);
@@ -509,7 +530,7 @@ static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
     lRetval = SortAllFlags(lFlagStateTuples, lFlagStateTuplesCount, sOptFlags);
     nlREQUIRE_SUCCESS(lRetval, done);
 
-    ListHeader();
+    ListFlagStateHeader();
 
     lFirst   = &lFlagStateTuples[0];
     lLast    = lFirst + lFlagStateTuplesCount;
@@ -517,7 +538,7 @@ static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext)
 
     while (lCurrent != lLast)
     {
-        lRetval = ListOne(*lCurrent);
+        lRetval = ListFlagStateOne(*lCurrent);
         nlREQUIRE_SUCCESS(lRetval, done);
 
         lCurrent++;
