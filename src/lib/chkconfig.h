@@ -258,6 +258,10 @@ extern chkconfig_status_t chkconfig_flag_state_tuple_init(chkconfig_flag_state_t
                                                           size_t count);
 extern chkconfig_status_t chkconfig_flag_state_tuple_destroy(chkconfig_flag_state_tuple_t *flag_state_tuples,
                                                              size_t count);
+extern int chkconfig_flag_state_tuple_flag_compare_function(const void *first_tuple,
+                                                            const void *second_tuple);
+extern int chkconfig_flag_state_tuple_state_compare_function(const void *first_tuple,
+                                                             const void *second_tuple);
 
 // MARK: Lifetime Management
 

@@ -498,13 +498,32 @@ static chkconfig_status_t chkconfigFlagStateTupleDestroy(chkconfig_flag_state_tu
     return (lRetval);
 }
 
-static int FlagSortFunction(const void *inLeft, const void *inRight)
+static int chkconfigFlagStateTupleFlagSortFunction(const chkconfig_flag_state_tuple_t &inFirstTuple,
+                                                   const chkconfig_flag_state_tuple_t &inSecondTuple)
 {
-    const chkconfig_flag_state_tuple_t *lLeftTuple  = static_cast<const chkconfig_flag_state_tuple_t *>(inLeft);
-    const chkconfig_flag_state_tuple_t *lRightTuple = static_cast<const chkconfig_flag_state_tuple_t *>(inRight);
-    int                                 lRetval;
+    int lRetval;
 
-    lRetval = strcmp(lLeftTuple->m_flag, lRightTuple->m_flag);
+    lRetval = strcmp(inFirstTuple.m_flag, inSecondTuple.m_flag);
+
+    return (lRetval);
+}
+
+static int chkconfigFlagStateTupleStateSortFunction(const chkconfig_flag_state_tuple_t &inFirstTuple,
+                                                    const chkconfig_flag_state_tuple_t &inSecondTuple)
+{
+    int lRetval;
+
+    // Compare the states as the primary sort key such that on / true
+    // sorts before off / false.
+
+    lRetval = inSecondTuple.m_state - inFirstTuple.m_state;
+
+    // If the states are equal, then sort by flag as a secondary sort key.
+
+    if (lRetval == 0)
+    {
+        lRetval = chkconfigFlagStateTupleFlagSortFunction(inFirstTuple, inSecondTuple);
+    }
 
     return (lRetval);
 }
@@ -565,14 +584,14 @@ static chkconfig_status_t chkconfigFlagStateTupleCopyUnion(chkconfig_flag_state_
     qsort(&inLeftFlagStateTuples[0],
           inLeftCount,
           sizeof(chkconfig_flag_state_tuple_t),
-          FlagSortFunction);
+          chkconfig_flag_state_tuple_flag_compare_function);
 
     // Sort the "right" flag/state tuples by flag.
 
     qsort(&inRightFlagStateTuples[0],
           inRightCount,
           sizeof(chkconfig_flag_state_tuple_t),
-          FlagSortFunction);
+          chkconfig_flag_state_tuple_flag_compare_function);
 
     // Run the union to get the count.
 
@@ -2080,4 +2099,73 @@ chkconfig_status_t chkconfig_flag_state_tuple_destroy(chkconfig_flag_state_tuple
 
  done:
     return (retval);
+}
+
+/**
+ *  @brief
+ *    Compare two flag/state tuples, using their flag values as the
+ *    primary comparison key.
+ *
+ *  @param[in]  first_tuple   An pointer to the first immutable
+ *                            flag/state tuple to compare.
+ *  @param[in]  second_tuple  An pointer to the second immutable
+ *                            flag/state tuple to compare.
+ *
+ *  @returns
+ *    An integer less than, equal to, or greater than zero if @a
+ *    first_tuple is found using their flag values, respectively, to
+ *    be less than, to match, or be greater than @a second_tuple.
+ *
+ *  @sa chkconfig_flag_state_tuple_state_compare_function
+ *
+ *  @ingroup utility
+ *
+ */
+int chkconfig_flag_state_tuple_flag_compare_function(const void *first_tuple,
+                                                     const void *second_tuple)
+{
+    const chkconfig_flag_state_tuple_t *lFirstTuple  = static_cast<const chkconfig_flag_state_tuple_t *>(first_tuple);
+    const chkconfig_flag_state_tuple_t *lSecondTuple = static_cast<const chkconfig_flag_state_tuple_t *>(second_tuple);
+
+    int lRetval;
+
+    lRetval = Detail::chkconfigFlagStateTupleFlagSortFunction(*lFirstTuple,
+                                                              *lSecondTuple);
+
+    return (lRetval);
+}
+
+/**
+ *  @brief
+ *    Compare two flag/state tuples, using their state values as the
+ *    primary and their flag values as the secondary comparison keys.
+ *
+ *  @param[in]  first_tuple   An pointer to the first immutable
+ *                            flag/state tuple to compare.
+ *  @param[in]  second_tuple  An pointer to the second immutable
+ *                            flag/state tuple to compare.
+ *
+ *  @returns
+ *    An integer less than, equal to, or greater than zero if @a
+ *    first_tuple is found using their flag and state values,
+ *    respectively, to be less than, to match, or be greater than @a
+ *    second_tuple.
+ *
+ *  @sa chkconfig_flag_state_tuple_flag_compare_function
+ *
+ *  @ingroup utility
+ *
+ */
+int chkconfig_flag_state_tuple_state_compare_function(const void *first_tuple,
+                                                      const void *second_tuple)
+{
+    const chkconfig_flag_state_tuple_t *lFirstTuple  = static_cast<const chkconfig_flag_state_tuple_t *>(first_tuple);
+    const chkconfig_flag_state_tuple_t *lSecondTuple = static_cast<const chkconfig_flag_state_tuple_t *>(second_tuple);
+
+    int lRetval;
+
+    lRetval = Detail::chkconfigFlagStateTupleStateSortFunction(*lFirstTuple,
+                                                               *lSecondTuple);
+
+    return (lRetval);
 }
