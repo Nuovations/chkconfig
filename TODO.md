@@ -3,7 +3,7 @@ source code control and the project repository hosting site.
 
 ### To Do
 
-- [ ] Make `chkconfig_state_get_all` work with the default directory.
+- [ ] Add support to both the library and utility for sorting by state origin (default, state, or none).
 
 ### In Progress
 
@@ -11,4 +11,4 @@ None
 
 ### Done
 
-None
+- [x] Make `chkconfig_state_copy_all` work with the default directory.
