@@ -58,8 +58,8 @@ checking the build results is recommended:
 In addition to depending on the C Standard Library, chkconfig depends
 on:
 
-  * nlassert
-  * nlunit-test
+  * [nlassert](https://github.com/Nuovations/nlassert)
+  * [nlunit-test](https://github.com/Nuovations/nlunit-test)
 
 However, nlunit-test is only required when building and running the chkconfig
 unit test suite.
