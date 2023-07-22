@@ -24,6 +24,9 @@ init, where things are sufficiently simple that _chkconfig_ fills an
 administrative void on such a system, even 30+ years after its
 predecessor first appeared on IRIX.
 
+Please see the [_chkconfig_ manual reference
+page](./doc/man/chkconfig.adoc) for more information.
+
 # Getting Started with chkconfig
 
 ## Building chkconfig
