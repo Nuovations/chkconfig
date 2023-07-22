@@ -17,14 +17,18 @@
 ##
 #  @file
 #    This file is the GNU automake template for the chkconfig in-package,
-#    man page documentation.
+#    manual reference page documentation.
 #
 
 include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
 
+if CHKCONFIG_BUILD_MAN
 man8_MANS                    = \
    chkconfig.8                 \
    $(NULL)
+else
+man8_MANS                    = $(NULL)
+endif # CHKCONFIG_BUILD_MAN
 
 man8_TXTS                    = $(patsubst %.8,%.adoc,$(man8_MANS))
 

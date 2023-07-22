@@ -1207,6 +1207,7 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+m4_include([build/autoconf/m4/chkconfig_enable_man.m4])
 m4_include([third_party/nlbuild-autotools/repo/autoconf/m4/ax_check_compiler.m4])
 m4_include([third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_coverage.m4])
 m4_include([third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_coverage_reporting.m4])

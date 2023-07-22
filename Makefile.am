@@ -36,6 +36,7 @@ EXTRA_DIST                                       = \
     .github/workflows/build.yml                    \
     bootstrap                                      \
     bootstrap-configure                            \
+    build/autoconf                                 \
     build/cstyle/cstyle.options                    \
     build/scripts/gen-chkconfig-version            \
     repos.conf                                     \
