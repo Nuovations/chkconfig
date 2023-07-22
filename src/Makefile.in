@@ -113,7 +113,9 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/ax_check_compiler.m4 \
+am__aclocal_m4_deps =  \
+	$(top_srcdir)/build/autoconf/m4/chkconfig_enable_man.m4 \
+	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/ax_check_compiler.m4 \
 	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_coverage.m4 \
 	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_coverage_reporting.m4 \
 	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_debug.m4 \

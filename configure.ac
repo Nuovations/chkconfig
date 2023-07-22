@@ -97,7 +97,7 @@ AC_CONFIG_AUX_DIR([third_party/nlbuild-autotools/repo/third_party/autoconf])
 # Note that nlbuild-autotools has macros in two subdirs, for local vs
 # third-party scripts
 #
-AC_CONFIG_MACRO_DIRS([build/autoconf/m4 third_party/nlbuild-autotools/repo/third_party/autoconf/m4 third_party/nlbuild-autotools/repo/autoconf/m4])
+AC_CONFIG_MACRO_DIRS([third_party/nlbuild-autotools/repo/third_party/autoconf/m4 third_party/nlbuild-autotools/repo/autoconf/m4 build/autoconf/m4])
 
 #
 # Tell autoconf what file the package is using to aggregate C preprocessor

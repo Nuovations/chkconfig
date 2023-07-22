@@ -32,7 +32,7 @@
 
 #  @file
 #    This file is the GNU automake template for the chkconfig in-package,
-#    man page documentation.
+#    manual reference page documentation.
 #
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -111,7 +111,9 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = doc/man
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/ax_check_compiler.m4 \
+am__aclocal_m4_deps =  \
+	$(top_srcdir)/build/autoconf/m4/chkconfig_enable_man.m4 \
+	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/ax_check_compiler.m4 \
 	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_coverage.m4 \
 	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_coverage_reporting.m4 \
 	$(top_srcdir)/third_party/nlbuild-autotools/repo/autoconf/m4/nl_enable_debug.m4 \
@@ -371,9 +373,10 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-man8_MANS = \
-   chkconfig.8                 \
-   $(NULL)
+@CHKCONFIG_BUILD_MAN_FALSE@man8_MANS = $(NULL)
+@CHKCONFIG_BUILD_MAN_TRUE@man8_MANS = \
+@CHKCONFIG_BUILD_MAN_TRUE@   chkconfig.8                 \
+@CHKCONFIG_BUILD_MAN_TRUE@   $(NULL)
 
 man8_TXTS = $(patsubst %.8,%.adoc,$(man8_MANS))
 man8_XMLS = $(patsubst %.8,%.xml,$(man8_MANS))
