@@ -1,5 +1,12 @@
 # Changes and What's New in chkconfig
 
+#### 0.9.6 (2023-07-21)
+
+    * Addressed an issue in which --disable-docs did not disable
+      building manual reference pages by adding a parallel option,
+      --disable-man, expressly addressing the man page use case
+      independently of Doxygen-based documentation.
+
 #### 0.9.5 (2023-07-21)
 
     * Addressed formatting issues with several options in the manual
