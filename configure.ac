@@ -295,9 +295,6 @@ AM_CONDITIONAL([CHKCONFIG_BUILD_TESTS], [test "${nl_cv_build_tests}" = "yes"])
 # Documentation
 #
 
-AC_PATH_PROG(ASCIIDOC, asciidoc)
-AC_PATH_PROG(XMLTO, xmlto)
-
 # Determine whether or not documentation (via Doxygen) should be built
 # or not, with 'auto' as the default and establish a default support
 # value for GraphViz 'dot' support.
@@ -305,6 +302,13 @@ AC_PATH_PROG(XMLTO, xmlto)
 NL_ENABLE_DOCS([auto],[NO])
 
 AM_CONDITIONAL(CHKCONFIG_BUILD_DOCS, [test "${nl_cv_build_docs}" = "yes"])
+
+# Determine whether or not manual reference pages (via AsciiDoc and
+# xmlto) should be built or not, with 'auto' as the default.
+
+CHKCONFIG_ENABLE_MAN([auto])
+
+AM_CONDITIONAL(CHKCONFIG_BUILD_MAN, [test "${chkconfig_cv_build_man}" = "yes"])
 
 #
 # Application-specific paths, potentially derived from configure
@@ -590,6 +594,7 @@ AC_MSG_NOTICE([
   Prefix                                      : ${prefix}
   Shadow directory program                    : ${LNDIR}
   Documentation support                       : ${nl_cv_build_docs}
+  Manual reference page support               : ${chkconfig_cv_build_man}
   Asciidoc                                    : ${ASCIIDOC:--}
   Xmlto                                       : ${XMLTO:--}
   Doxygen                                     : ${DOXYGEN:--}
