@@ -624,25 +624,31 @@ static chkconfig_status_t chkconfigFlagStateTupleCopyUnion(chkconfig_flag_state_
           sizeof(chkconfig_flag_state_tuple_t),
           chkconfig_flag_state_tuple_flag_compare_function);
 
-    // Run the union to get the count.
+    // Run the union to get the count, which might very well be zero.
 
     lUnionCount = chkconfigFlagStateTupleCountUnion(lLeftFirst,
                                                     lLeftLast,
                                                     lRightFirst,
                                                     lRightLast);
 
-    // Allocate a new flag/state tuple array for the union result.
+    // If the union count was non-zero, allocate a new flag/state
+    // tuple array for the union result and populate the union.
 
-    lRetval = chkconfigFlagStateTupleInit(lUnionFlagStateTuples, lUnionCount);
-    nlREQUIRE_SUCCESS(lRetval, done);
+    if (lUnionCount > 0)
+    {
+        // Allocate a new flag/state tuple array for the union result.
 
-    // Run the union again to populate the union result.
+        lRetval = chkconfigFlagStateTupleInit(lUnionFlagStateTuples, lUnionCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
 
-    chkconfigFlagStateTupleCopyUnion(lLeftFirst,
-                                     lLeftLast,
-                                     lRightFirst,
-                                     lRightLast,
-                                     &lUnionFlagStateTuples[0]);
+        // Run the union again to populate the union result.
+
+        chkconfigFlagStateTupleCopyUnion(lLeftFirst,
+                                         lLeftLast,
+                                         lRightFirst,
+                                         lRightLast,
+                                         &lUnionFlagStateTuples[0]);
+    }
 
     outUnionFlagStateTuples = lUnionFlagStateTuples;
     outUnionCount           = lUnionCount;
@@ -1172,21 +1178,34 @@ static chkconfig_status_t chkconfigStateCopyAll(const chkconfig_origin_t &inOrig
 
     nlREQUIRE_ACTION(inDirectoryPath != nullptr, done, lRetval = -EINVAL);
 
+    // Get a count of the number of flag/state backing files in the
+    // specified directory, which might very well be zero.
+
     lRetval = chkconfigStateGetCount(inDirectoryPath, lCount);
     nlREQUIRE_SUCCESS(lRetval, done);
 
-    lRetval = chkconfigFlagStateTupleInit(lFlagStateTuples, lCount);
-    nlREQUIRE_SUCCESS(lRetval, done);
+    // If the count was non-zero, allocate a new flag/state
+    // tuple array for the results and populate them.
 
-    lDirectory = opendir(inDirectoryPath);
-    nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
+    if (lCount > 0)
+    {
+        // Allocate a new flag/state tuple array for the results.
 
-    lRetval = chkconfigStateGetAll(inOrigin,
-                                   inDirectoryPath,
-                                   lDirectory,
-                                   lFlagStateTuples,
-                                   lCount);
-    nlREQUIRE_SUCCESS(lRetval, done);
+        lRetval = chkconfigFlagStateTupleInit(lFlagStateTuples, lCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
+
+        // Open the specified directory and populate the results.
+
+        lDirectory = opendir(inDirectoryPath);
+        nlREQUIRE_ACTION(lDirectory != nullptr, done, lRetval = -errno);
+
+        lRetval = chkconfigStateGetAll(inOrigin,
+                                       inDirectoryPath,
+                                       lDirectory,
+                                       lFlagStateTuples,
+                                       lCount);
+        nlREQUIRE_SUCCESS(lRetval, done);
+    }
 
     outFlagStateTuples = lFlagStateTuples;
     outCount           = lCount;
