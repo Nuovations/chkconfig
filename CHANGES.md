@@ -1,5 +1,11 @@
 # Changes and What's New in chkconfig
 
+#### 0.9.7 (2023-07-25)
+
+    * Addressed an issue in which empty default or state backing store
+      directories was incorrectly treated as an error by making it a
+      non-error case.
+
 #### 0.9.6 (2023-07-21)
 
     * Addressed an issue in which --disable-docs did not disable
