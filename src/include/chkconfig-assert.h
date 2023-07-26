@@ -46,23 +46,11 @@ extern "C" {
 /**
  *  @def NL_ASSERT_LOG
  *
- *  Indicate that the package will use standard I/O, as defined.
+ *  Indicate that the package will use the default, standard I/O log
+ *  function.
  *
  */
-#define NL_ASSERT_LOG(aPrefix, aName, aCondition, aLabel, aFile, aLine, aMessage)       \
-    do                                                                                  \
-    {                                                                                   \
-        fprintf(stderr,                                                                 \
-                NL_ASSERT_LOG_FORMAT_DEFAULT,                                           \
-                aPrefix,                                                                \
-                (((aName) == 0) || (*(aName) == '\0')) ? "" : aName,                    \
-                (((aName) == 0) || (*(aName) == '\0')) ? "" : ": ",                     \
-                aCondition,                                                             \
-                ((aMessage == 0) ? "" : aMessage),                                      \
-                ((aMessage == 0) ? "" : ", "),                                          \
-                aFile,                                                                  \
-                aLine);                                                                 \
-    } while (0)
+#define NL_ASSERT_LOG NL_ASSERT_LOG_DEFAULT
 
 #include <nlassert.h>
 
