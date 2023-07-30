@@ -100,7 +100,7 @@ and `--sysconfdir`. In turn, `--localstatedir`, by default, influences
 `--with-chkconfig-defaultdir`.
 
 So, if you wanted to ensure that the default and state directories
-ended up in _/etc/config_ and _/var/config_, respective, then you
+ended up in _/etc/config_ and _/var/config_, respectively, then you
 would want to invoke `configure` as follows:
 
   * `configure --prefix=/ --sysconfdir=/etc --localstatedir=/var`
