@@ -275,10 +275,10 @@ extern chkconfig_status_t chkconfig_state_string_get_state(const char *state_str
 extern chkconfig_status_t chkconfig_state_get_state_string(chkconfig_state_t state,
                                                            const char **state_string);
 
-extern chkconfig_status_t chkconfig_flag_state_tuple_init(chkconfig_flag_state_tuple_t **flag_state_tuples,
-                                                          size_t count);
-extern chkconfig_status_t chkconfig_flag_state_tuple_destroy(chkconfig_flag_state_tuple_t *flag_state_tuples,
-                                                             size_t count);
+extern chkconfig_status_t chkconfig_flag_state_tuples_init(chkconfig_flag_state_tuple_t **flag_state_tuples,
+                                                           size_t count);
+extern chkconfig_status_t chkconfig_flag_state_tuples_destroy(chkconfig_flag_state_tuple_t *flag_state_tuples,
+                                                              size_t count);
 extern int chkconfig_flag_state_tuple_flag_compare_function(const void *first_tuple,
                                                             const void *second_tuple);
 extern int chkconfig_flag_state_tuple_state_compare_function(const void *first_tuple,
