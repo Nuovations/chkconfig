@@ -484,8 +484,8 @@ static chkconfig_status_t chkconfigStateGetStateString(const chkconfig_state_t &
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigFlagStateTupleInit(chkconfig_flag_state_tuple_t *&inFlagStateTuples,
-                                                      const size_t &inFlagStateTupleCount)
+static chkconfig_status_t chkconfigFlagStateTuplesInit(chkconfig_flag_state_tuple_t *&inFlagStateTuples,
+                                                       const size_t &inFlagStateTupleCount)
 {
     chkconfig_status_t lRetval = CHKCONFIG_STATUS_SUCCESS;
 
@@ -501,8 +501,8 @@ static chkconfig_status_t chkconfigFlagStateTupleInit(chkconfig_flag_state_tuple
     return (lRetval);
 }
 
-static chkconfig_status_t chkconfigFlagStateTupleDestroy(chkconfig_flag_state_tuple_t *&inFlagStateTuples,
-                                                         const size_t &inFlagStateTupleCount)
+static chkconfig_status_t chkconfigFlagStateTuplesDestroy(chkconfig_flag_state_tuple_t *&inFlagStateTuples,
+                                                          const size_t &inFlagStateTupleCount)
 {
     chkconfig_flag_state_tuple_t * const lFirst   = &inFlagStateTuples[0];
     chkconfig_flag_state_tuple_t * const lLast    = (lFirst + inFlagStateTupleCount);
@@ -638,7 +638,7 @@ static chkconfig_status_t chkconfigFlagStateTupleCopyUnion(chkconfig_flag_state_
     {
         // Allocate a new flag/state tuple array for the union result.
 
-        lRetval = chkconfigFlagStateTupleInit(lUnionFlagStateTuples, lUnionCount);
+        lRetval = chkconfigFlagStateTuplesInit(lUnionFlagStateTuples, lUnionCount);
         nlREQUIRE_SUCCESS(lRetval, done);
 
         // Run the union again to populate the union result.
@@ -1191,7 +1191,7 @@ static chkconfig_status_t chkconfigStateCopyAll(const chkconfig_origin_t &inOrig
     {
         // Allocate a new flag/state tuple array for the results.
 
-        lRetval = chkconfigFlagStateTupleInit(lFlagStateTuples, lCount);
+        lRetval = chkconfigFlagStateTuplesInit(lFlagStateTuples, lCount);
         nlREQUIRE_SUCCESS(lRetval, done);
 
         // Open the specified directory and populate the results.
@@ -1219,7 +1219,7 @@ static chkconfig_status_t chkconfigStateCopyAll(const chkconfig_origin_t &inOrig
     {
         if (lFlagStateTuples != nullptr)
         {
-            const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lFlagStateTuples, lCount);
+            const chkconfig_status_t lStatus = chkconfigFlagStateTuplesDestroy(lFlagStateTuples, lCount);
             nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
         }
     }
@@ -1282,13 +1282,13 @@ static chkconfig_status_t chkconfigStateCopyAllWithDefaultDirectory(chkconfig_co
  done:
     if (lDefaultFlagStateTuples != nullptr)
     {
-        const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lDefaultFlagStateTuples, lDefaultCount);
+        const chkconfig_status_t lStatus = chkconfigFlagStateTuplesDestroy(lDefaultFlagStateTuples, lDefaultCount);
         nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
     }
 
     if (lStateFlagStateTuples != nullptr)
     {
-        const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lStateFlagStateTuples, lStateCount);
+        const chkconfig_status_t lStatus = chkconfigFlagStateTuplesDestroy(lStateFlagStateTuples, lStateCount);
         nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
     }
 
@@ -1354,7 +1354,7 @@ static chkconfig_status_t chkconfigStateGetCountWithDefaultDirectory(chkconfig_c
  done:
     if (lUnionFlagStateTuples != nullptr)
     {
-        const chkconfig_status_t lStatus = chkconfigFlagStateTupleDestroy(lUnionFlagStateTuples, lUnionCount);
+        const chkconfig_status_t lStatus = chkconfigFlagStateTuplesDestroy(lUnionFlagStateTuples, lUnionCount);
         nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
     }
 
@@ -1852,7 +1852,7 @@ chkconfig_status_t chkconfig_state_get_with_origin(chkconfig_context_pointer_t c
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get
  *  @sa chkconfig_state_copy_all
- *  @sa chkconfig_flag_state_tuple_init
+ *  @sa chkconfig_flag_state_tuples_init
  *
  *  @ingroup observers
  *
@@ -1900,7 +1900,7 @@ chkconfig_status_t chkconfig_state_get_multiple(chkconfig_context_pointer_t cont
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get
  *  @sa chkconfig_state_copy_all
- *  @sa chkconfig_flag_state_tuple_init
+ *  @sa chkconfig_flag_state_tuples_init
  *
  *  @ingroup observers
  *
@@ -1931,7 +1931,7 @@ chkconfig_status_t chkconfig_state_get_count(chkconfig_context_pointer_t context
  *  @note
  *    The caller is responsible for deallocating resources on success
  *    associated with @a flag_state_tuples by calling
- *    #chkconfig_flag_state_tuple_destroy.
+ *    #chkconfig_flag_state_tuples_destroy.
  *
  *  @param[in]      context_pointer    A pointer to the chkconfig
  *                                     library context for which to
@@ -1961,7 +1961,7 @@ chkconfig_status_t chkconfig_state_get_count(chkconfig_context_pointer_t context
  *  @sa chkconfig_state_get_count
  *  @sa chkconfig_state_get
  *  @sa chkconfig_state_get_multiple
- *  @sa chkconfig_flag_state_tuple_init
+ *  @sa chkconfig_flag_state_tuples_init
  *
  *  @ingroup observers
  *
@@ -2061,7 +2061,7 @@ chkconfig_status_t chkconfig_state_set(chkconfig_context_pointer_t context_point
  *
  *  @sa chkconfig_options_set
  *  @sa chkconfig_state_set
- *  @sa chkconfig_flag_state_tuple_init
+ *  @sa chkconfig_flag_state_tuples_init
  *
  *  @ingroup mutators
  *
@@ -2208,20 +2208,20 @@ chkconfig_status_t chkconfig_state_get_state_string(chkconfig_state_t state,
  *  @retval  -ENOMEM                   Resources could not be allocated
  *                                     for the requested array.
  *
- *  @sa chkconfig_flag_state_tuple_destroy
+ *  @sa chkconfig_flag_state_tuples_destroy
  *
  *  @ingroup utility
  *
  */
-chkconfig_status_t chkconfig_flag_state_tuple_init(chkconfig_flag_state_tuple_t **flag_state_tuples,
-                                                   size_t count)
+chkconfig_status_t chkconfig_flag_state_tuples_init(chkconfig_flag_state_tuple_t **flag_state_tuples,
+                                                    size_t count)
 {
     chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
 
     nlREQUIRE_ACTION(flag_state_tuples != nullptr, done, retval = -EINVAL);
 
-    retval = Detail::chkconfigFlagStateTupleInit(*flag_state_tuples,
-                                                 count);
+    retval = Detail::chkconfigFlagStateTuplesInit(*flag_state_tuples,
+                                                  count);
 
  done:
     return (retval);
@@ -2243,20 +2243,20 @@ chkconfig_status_t chkconfig_flag_state_tuple_init(chkconfig_flag_state_tuple_t 
  *  @retval  CHKCONFIG_STATUS_SUCCESS  If successful.
  *  @retval  -EINVAL                   If @a flag_state_tuples is null.
  *
- *  @sa chkconfig_flag_state_tuple_init
+ *  @sa chkconfig_flag_state_tuples_init
  *
  *  @ingroup utility
  *
  */
-chkconfig_status_t chkconfig_flag_state_tuple_destroy(chkconfig_flag_state_tuple_t *flag_state_tuples,
-                                                      size_t count)
+chkconfig_status_t chkconfig_flag_state_tuples_destroy(chkconfig_flag_state_tuple_t *flag_state_tuples,
+                                                       size_t count)
 {
     chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
 
     nlREQUIRE_ACTION(flag_state_tuples != nullptr, done, retval = -EINVAL);
 
-    retval = Detail::chkconfigFlagStateTupleDestroy(flag_state_tuples,
-                                                    count);
+    retval = Detail::chkconfigFlagStateTuplesDestroy(flag_state_tuples,
+                                                     count);
 
  done:
     return (retval);

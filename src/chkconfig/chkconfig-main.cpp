@@ -642,7 +642,7 @@ static chkconfig_status_t ListAllFlags(chkconfig_context_t &inContext,
  done:
     if (lFlagStateTuples != nullptr)
     {
-        lStatus = chkconfig_flag_state_tuple_destroy(lFlagStateTuples, lFlagStateTuplesCount);
+        lStatus = chkconfig_flag_state_tuples_destroy(lFlagStateTuples, lFlagStateTuplesCount);
         nlVERIFY_SUCCESS_ACTION(lStatus, lRetval = lStatus);
     }
 
