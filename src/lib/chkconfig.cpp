@@ -124,7 +124,7 @@ class FlagStateTupleIteratorBasis
 protected:
     // MARK: Constructors
 
-    FlagStateTupleIteratorBasis(void);
+    FlagStateTupleIteratorBasis(void) = delete;
 
     explicit FlagStateTupleIteratorBasis(const chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
     explicit FlagStateTupleIteratorBasis(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
@@ -164,7 +164,6 @@ public:
 
     bool operator ==(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const;
     bool operator !=(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const;
-    bool operator <(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const;
 };
 
 /**
@@ -190,7 +189,7 @@ class FlagStateTupleOutputAssignmentIterator :
 public:
     // MARK: Constructors
 
-    FlagStateTupleOutputAssignmentIterator(void);
+    FlagStateTupleOutputAssignmentIterator(void) = delete;
 
     explicit FlagStateTupleOutputAssignmentIterator(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer);
 
@@ -269,12 +268,6 @@ static const char * const        sOriginStrings[]         =
 
 // MARK: Constructors
 
-FlagStateTupleIteratorBasis :: FlagStateTupleIteratorBasis(void) :
-    mFlagStateTuplePointer(nullptr)
-{
-    return;
-}
-
 FlagStateTupleIteratorBasis :: FlagStateTupleIteratorBasis(const chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
     mFlagStateTuplePointer(const_cast<chkconfig_flag_state_tuple_t *>(inFlagStateTuplePointer))
 {
@@ -331,22 +324,9 @@ bool FlagStateTupleInputIterator :: operator !=(const FlagStateTupleInputIterato
     return (lRetval);
 }
 
-bool FlagStateTupleInputIterator :: operator <(const FlagStateTupleInputIterator & inFlagStateTupleInputIterator) const
-{
-    const bool lRetval = (mFlagStateTuplePointer < inFlagStateTupleInputIterator.mFlagStateTuplePointer);
-
-    return (lRetval);
-}
-
 // MARK: Flag/State Tuple Output Assignment Iterator
 
 // MARK: Constructors
-
-FlagStateTupleOutputAssignmentIterator :: FlagStateTupleOutputAssignmentIterator(void) :
-    FlagStateTupleIteratorBasis()
-{
-    return;
-}
 
 FlagStateTupleOutputAssignmentIterator :: FlagStateTupleOutputAssignmentIterator(chkconfig_flag_state_tuple_t * inFlagStateTuplePointer) :
     FlagStateTupleIteratorBasis(inFlagStateTuplePointer)
