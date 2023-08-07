@@ -284,23 +284,26 @@ extern int chkconfig_flag_state_tuple_flag_compare_function(const void *first_tu
 extern int chkconfig_flag_state_tuple_state_compare_function(const void *first_tuple,
                                                              const void *second_tuple);
 
-// MARK: Lifetime Management
+// MARK: Context Lifetime Management
 
 extern chkconfig_status_t chkconfig_init(chkconfig_context_pointer_t *context_pointer);
+extern chkconfig_status_t chkconfig_destroy(chkconfig_context_pointer_t *context_pointer);
+
+// MARK: Option Lifetime Management
+
 extern chkconfig_status_t chkconfig_options_init(chkconfig_context_pointer_t context_pointer,
                                                  chkconfig_options_pointer_t *options_pointer);
 extern chkconfig_status_t chkconfig_options_destroy(chkconfig_context_pointer_t context_pointer,
                                                     chkconfig_options_pointer_t *options_pointer);
-extern chkconfig_status_t chkconfig_destroy(chkconfig_context_pointer_t *context_pointer);
 
-// MARK: Option Management
+// MARK: Option Mutation
 
 extern chkconfig_status_t chkconfig_options_set(chkconfig_context_pointer_t context_pointer,
                                                 chkconfig_options_pointer_t options_pointer,
                                                 chkconfig_option_t option,
                                                 ...);
 
-// MARK: Observers
+// MARK: Flag Observation
 
 extern chkconfig_status_t chkconfig_state_get(chkconfig_context_pointer_t context_pointer,
                                               chkconfig_flag_t flag,
@@ -319,7 +322,7 @@ extern chkconfig_status_t chkconfig_state_copy_all(chkconfig_context_pointer_t c
                                                    chkconfig_flag_state_tuple_t **flag_state_tuples,
                                                    size_t *count);
 
-// MARK: Mutators
+// MARK: Flag Mutation
 
 extern chkconfig_status_t chkconfig_state_set(chkconfig_context_pointer_t context_pointer,
                                               chkconfig_flag_t flag,
