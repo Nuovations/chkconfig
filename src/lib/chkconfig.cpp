@@ -490,6 +490,7 @@ static chkconfig_status_t chkconfigFlagStateTuplesDestroy(chkconfig_flag_state_t
     chkconfig_status_t                   lRetval  = CHKCONFIG_STATUS_SUCCESS;
 
     nlREQUIRE_ACTION(inFlagStateTuples != nullptr, done, lRetval = -EINVAL);
+    nlREQUIRE_ACTION(inFlagStateTupleCount > 0,    done, lRetval = -EINVAL);
 
     while (lCurrent != lLast)
     {
@@ -2234,6 +2235,7 @@ chkconfig_status_t chkconfig_flag_state_tuples_destroy(chkconfig_flag_state_tupl
     chkconfig_status_t retval = CHKCONFIG_STATUS_SUCCESS;
 
     nlREQUIRE_ACTION(flag_state_tuples != nullptr, done, retval = -EINVAL);
+    nlREQUIRE_ACTION(count > 0,                    done, retval = -EINVAL);
 
     retval = Detail::chkconfigFlagStateTuplesDestroy(flag_state_tuples,
                                                      count);
