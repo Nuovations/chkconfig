@@ -219,7 +219,7 @@ static const struct option sOptions[]          = {
 
 static const char * const  sShortUsageString =
 "Usage: %1$s [ -hV ]\n"
-"       %1$s [ <directory options> ] [ -dsq ]\n"
+"       %1$s [ <directory options> ] [ -dosq ]\n"
 "       %1$s [ <directory options> ] [ -dq ] <flag>\n"
 "       %1$s [ <directory options> ] [ -fq ] <flag> <on | off>\n";
 
