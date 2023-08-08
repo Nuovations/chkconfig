@@ -938,11 +938,6 @@ uninstall-am: uninstall-libLTLIBRARIES \
 
 include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
 
-# Ensure that libraries are built before trying to run any recursive
-# targets from SUBDIRS that might depend on them.
-
-AM_RECURSIVE_TARGETS: $(LIBRARIES)
-
 include $(abs_top_nlbuild_autotools_dir)/automake/post.am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

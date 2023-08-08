@@ -43,6 +43,14 @@
 #include "chkconfig-assert.h"
 
 
+// MARK: Type Declarations
+
+struct TestContext
+{
+    char mDefaultDirectory[PATH_MAX];
+    char mStateDirectory[PATH_MAX];
+};
+
 static int TestSuiteInitialize(void *inContext __attribute__((unused)))
 {
     int lRetval  = 0;
@@ -56,17 +64,107 @@ static int TestSuiteFinalize(void *inContext __attribute__((unused)))
     return (lRetval);
 }
 
+/*
+ * Utility (Origin)
+ */
+static void TestUtilityOrigin(nlTestSuite *inSuite, void *inContext __attribute__((unused)))
+{
+    static constexpr int kBadOrigin = -42;
+    chkconfig_origin_t   lOrigin;
+    const char *         lOriginString;
+    chkconfig_status_t   lStatus;
+    size_t               lLength;
+
+    // 1.0. Negative Tests
+
+    // 1.0.0. Ensure that passing a null string argument to
+    //        chkconfig_origin_get_origin_string returns -EINVAL.
+
+    lOrigin = CHKCONFIG_ORIGIN_UNKNOWN;
+
+    lStatus = chkconfig_origin_get_origin_string(lOrigin, nullptr);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.1.0. Ensure that passing an invalid origin value to
+    //        chkconfig_origin_get_origin_string returns -EINVAL.
+
+    lOrigin = static_cast<chkconfig_origin_t>(kBadOrigin);
+
+    lStatus = chkconfig_origin_get_origin_string(lOrigin, &lOriginString);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 2.0. Positive Tests
+
+    // 2.0.0. Ensure that passing CHKCONFIG_ORIGIN_UNKNOWN to
+    //        chkconfig_origin_get_origin_string succeeds and yields a
+    //        non-null, non-zero length null-terminated C string
+    //        pointer.
+
+    lOrigin = CHKCONFIG_ORIGIN_UNKNOWN;
+
+    lStatus = chkconfig_origin_get_origin_string(lOrigin, &lOriginString);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOriginString != nullptr);
+
+    lLength = strlen(lOriginString);
+    NL_TEST_ASSERT(inSuite, lLength > 0);
+
+    // 2.1.0. Ensure that passing CHKCONFIG_ORIGIN_NONE to
+    //        chkconfig_origin_get_origin_string succeeds and yields a
+    //        non-null, non-zero length null-terminated C string
+    //        pointer.
+
+    lOrigin = CHKCONFIG_ORIGIN_NONE;
+
+    lStatus = chkconfig_origin_get_origin_string(lOrigin, &lOriginString);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOriginString != nullptr);
+
+    lLength = strlen(lOriginString);
+    NL_TEST_ASSERT(inSuite, lLength > 0);
+
+    // 2.2.0. Ensure that passing CHKCONFIG_ORIGIN_DEFAULT to
+    //        chkconfig_origin_get_origin_string succeeds and yields a
+    //        non-null, non-zero length null-terminated C string
+    //        pointer.
+
+    lOrigin = CHKCONFIG_ORIGIN_DEFAULT;
+
+    lStatus = chkconfig_origin_get_origin_string(lOrigin, &lOriginString);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOriginString != nullptr);
+
+    lLength = strlen(lOriginString);
+    NL_TEST_ASSERT(inSuite, lLength > 0);
+
+    // 2.3.0. Ensure that passing CHKCONFIG_ORIGIN_STATE to
+    //        chkconfig_origin_get_origin_string succeeds and yields a
+    //        non-null, non-zero length null-terminated C string
+    //        pointer.
+
+    lOrigin = CHKCONFIG_ORIGIN_STATE;
+
+    lStatus = chkconfig_origin_get_origin_string(lOrigin, &lOriginString);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOriginString != nullptr);
+
+    lLength = strlen(lOriginString);
+    NL_TEST_ASSERT(inSuite, lLength > 0);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
  */
 static const nlTest sTests[] = {
+    NL_TEST_DEF("Utility (Origin)",              TestUtilityOrigin),
 
     NL_TEST_SENTINEL()
 };
 
 int main(void)
 {
+    TestContext theContext;
     nlTestSuite theSuite = {
         "libchkconfig",
         &sTests[0],
@@ -85,7 +183,7 @@ int main(void)
     nlTestSetOutputStyle(OUTPUT_DEF);
 
     // Run test suite against one context.
-    nlTestRunner(&theSuite, nullptr);
+    nlTestRunner(&theSuite, &theContext);
 
     return (nlTestRunnerStats(&theSuite));
 }
