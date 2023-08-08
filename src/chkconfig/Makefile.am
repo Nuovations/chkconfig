@@ -26,11 +26,6 @@ sbin_PROGRAMS                                                    = \
     chkconfig                                                      \
     $(NULL)
 
-# Ensure that programs are built before trying to run any recursive
-# targets from SUBDIRS that might depend on them.
-
-AM_RECURSIVE_TARGETS: $(PROGRAMS)
-
 SUBDIRS                                                          = \
     tests                                                          \
     $(NULL)

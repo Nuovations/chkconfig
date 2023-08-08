@@ -25,11 +25,6 @@ lib_LTLIBRARIES                                                  = \
     libchkconfig.la                                                \
     $(NULL)
 
-# Ensure that libraries are built before trying to run any recursive
-# targets from SUBDIRS that might depend on them.
-
-AM_RECURSIVE_TARGETS: $(LIBRARIES)
-
 SUBDIRS                                                          = \
     tests                                                          \
     $(NULL)
