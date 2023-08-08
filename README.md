@@ -1,8 +1,11 @@
 [![Build Status][chkconfig-github-action-svg]][chkconfig-github-action]
+[![Coverage Status][chkconfig-codecov-svg]][chkconfig-codecov]
 
 [chkconfig-github]: https://github.com/nuovations/chkconfig
 [chkconfig-github-action]: https://github.com/nuovations/chkconfig/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush
 [chkconfig-github-action-svg]: https://github.com/nuovations/chkconfig/actions/workflows/build.yml/badge.svg?branch=main&event=push
+[chkconfig-codecov]: https://codecov.io/gh/Nuovations/chkconfig
+[chkconfig-codecov-svg]: https://codecov.io/gh/Nuovations/chkconfig/branch/main/graph/badge.svg
 
 chkconfig
 =========
