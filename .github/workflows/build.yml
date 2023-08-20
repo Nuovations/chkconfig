@@ -33,7 +33,7 @@ jobs:
     strategy:
       matrix:
         compiler:
-          - { name: GCC,        c: gcc,   cxx: g++,     options: "" }
+          - { name: GCC,        c: gcc,   cxx: g++,     options: "--enable-coverage" }
           - { name: clang/LLVM, c: clang, cxx: clang++, options: "" }
         configuration:
           - { name: "Debug",   options: "--enable-debug" }
@@ -58,7 +58,7 @@ jobs:
 
     - name: Bootstrap and Configure
       run: |
-        ./bootstrap-configure -C ${{matrix.configuration['options']}} --prefix=/
+        ./bootstrap-configure -C ${{matrix.configuration['options']}} ${{matrix.compiler['options']}} --prefix=/
 
     - name: Coding Style
       run: |
@@ -72,14 +72,18 @@ jobs:
       run: |
         make -j check
 
+    - name: Upload Coverage Reports to Codecov.io
+      run: |
+        bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -g 'src/lib/*' -G 'src/lib/tests/*'
+
   macos:
     runs-on: macos-latest
     name: "macOS ${{matrix.compiler['name']}} [${{matrix.configuration['name']}}]"
     strategy:
       matrix:
         compiler:
-          - { name: GCC,        c: gcc,   cxx: g++ }
-          - { name: clang/LLVM, c: clang, cxx: clang++ }
+          - { name: GCC,        c: gcc,   cxx: g++,     options: "" }
+          - { name: clang/LLVM, c: clang, cxx: clang++, options: "" }
         configuration:
           - { name: "Debug",   options: "--enable-debug" }
           - { name: "Release", options: "" }
@@ -99,7 +103,7 @@ jobs:
     - name: Bootstrap and Configure
       run: |
         export PATH="$(brew --prefix m4)/bin:${PATH}"
-        ./bootstrap-configure -C ${{matrix.configuration['options']}} --prefix=/
+        ./bootstrap-configure -C ${{matrix.configuration['options']}} ${{matrix.compiler['options']}} --enable-coverage --prefix=/
 
     - name: Coding Style
       run: |
@@ -112,3 +116,7 @@ jobs:
     - name: Test
       run: |
         make -j check
+
+    - name: Upload Coverage Reports to Codecov.io
+      run: |
+        bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -g 'src/lib/*' -G 'src/lib/tests/*'

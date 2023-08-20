@@ -637,6 +637,9 @@ EXTRA_DIST = \
 @CHKCONFIG_BUILD_TESTS_TRUE@    $(top_builddir)/src/lib/libchkconfig.la        \
 @CHKCONFIG_BUILD_TESTS_TRUE@    $(NULL)
 
+@CHKCONFIG_BUILD_TESTS_TRUE@NLFOREIGN_FILE_DEPENDENCIES = \
+@CHKCONFIG_BUILD_TESTS_TRUE@    $(top_builddir)/src/lib/libchkconfig.la        \
+@CHKCONFIG_BUILD_TESTS_TRUE@    $(NULL)
 
 # The additional environment variables and their values that will be
 # made available to all programs and scripts in TESTS.
@@ -1146,7 +1149,7 @@ include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
 @CHKCONFIG_BUILD_COVERAGE_REPORTS_TRUE@@CHKCONFIG_BUILD_COVERAGE_TRUE@@CHKCONFIG_BUILD_TESTS_TRUE@	$(call create-directory)
 
 @CHKCONFIG_BUILD_COVERAGE_REPORTS_TRUE@@CHKCONFIG_BUILD_COVERAGE_TRUE@@CHKCONFIG_BUILD_TESTS_TRUE@$(CHKCONFIG_COVERAGE_INFO): check | $(CHKCONFIG_COVERAGE_BUNDLE)
-@CHKCONFIG_BUILD_COVERAGE_REPORTS_TRUE@@CHKCONFIG_BUILD_COVERAGE_TRUE@@CHKCONFIG_BUILD_TESTS_TRUE@	$(call generate-coverage-report,${top_builddir}/src/lib,${top_builddir}/src/lib/tests* ${INCLUDE_PATTERNS})
+@CHKCONFIG_BUILD_COVERAGE_REPORTS_TRUE@@CHKCONFIG_BUILD_COVERAGE_TRUE@@CHKCONFIG_BUILD_TESTS_TRUE@	$(call generate-coverage-report,${top_builddir}/src/lib,${top_builddir}/src/lib/tests ${INCLUDE_PATTERNS})
 
 @CHKCONFIG_BUILD_COVERAGE_REPORTS_TRUE@@CHKCONFIG_BUILD_COVERAGE_TRUE@@CHKCONFIG_BUILD_TESTS_TRUE@coverage: $(CHKCONFIG_COVERAGE_INFO)
 

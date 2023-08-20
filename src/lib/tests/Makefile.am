@@ -56,6 +56,10 @@ COMMON_LDADD                                     = \
     $(top_builddir)/src/lib/libchkconfig.la        \
     $(NULL)
 
+NLFOREIGN_FILE_DEPENDENCIES                      = \
+    $(top_builddir)/src/lib/libchkconfig.la        \
+    $(NULL)
+
 # Test applications that should be run when the 'check' target is run.
 
 check_PROGRAMS                                   = \
@@ -84,8 +88,8 @@ test_libchkconfig_LDADD                          = $(COMMON_LDADD)
 # Foreign make dependencies
 #
 
-NLFOREIGN_SUBDIR_DEPENDENCIES                         = \
-   $(NLUNIT_TEST_FOREIGN_SUBDIR_DEPENDENCY)             \
+NLFOREIGN_SUBDIR_DEPENDENCIES                    = \
+   $(NLUNIT_TEST_FOREIGN_SUBDIR_DEPENDENCY)        \
    $(NULL)
 
 if CHKCONFIG_BUILD_COVERAGE
@@ -109,7 +113,7 @@ INCLUDE_PATHS                                   := $(subst -I,,$(sort $(NLASSERT
 INCLUDE_PATTERNS                                := $(if $(INCLUDE_PATHS),$(addsuffix *,$(INCLUDE_PATHS)),)
 
 $(CHKCONFIG_COVERAGE_INFO): check | $(CHKCONFIG_COVERAGE_BUNDLE)
-	$(call generate-coverage-report,${top_builddir}/src/lib,${top_builddir}/src/lib/tests* ${INCLUDE_PATTERNS})
+	$(call generate-coverage-report,${top_builddir}/src/lib,${top_builddir}/src/lib/tests ${INCLUDE_PATTERNS})
 
 coverage: $(CHKCONFIG_COVERAGE_INFO)
 

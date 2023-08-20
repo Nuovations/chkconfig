@@ -886,11 +886,6 @@ uninstall-am: uninstall-sbinPROGRAMS
 
 include $(abs_top_nlbuild_autotools_dir)/automake/pre.am
 
-# Ensure that programs are built before trying to run any recursive
-# targets from SUBDIRS that might depend on them.
-
-AM_RECURSIVE_TARGETS: $(PROGRAMS)
-
 $(sbin_PROGRAMS): $(NLFOREIGN_SUBDIR_DEPENDENCIES)
 
 include $(abs_top_nlbuild_autotools_dir)/automake/post.am
