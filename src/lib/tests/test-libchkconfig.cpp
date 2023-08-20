@@ -245,6 +245,75 @@ static void TestUtilityState(nlTestSuite *inSuite, void *inContext __attribute__
     NL_TEST_ASSERT(inSuite, lComparison == 0);
 }
 
+/*
+ * Utility (Tuples Lifetime)
+ */
+static void TestUtilityTuplesLifetime(nlTestSuite *inSuite, void *inContext __attribute__((unused)))
+{
+    chkconfig_flag_state_tuple_t * lFlagStateTuples;
+    size_t                         lFlagStateTuplesCount;
+    chkconfig_status_t             lStatus;
+
+    // 1.0. Negative Tests
+
+    // 1.0.0. Ensure that passing a null tuples argument to
+    //        chkconfig_flag_state_tuples_init returns -EINVAL.
+
+    lFlagStateTuplesCount = 1;
+
+    lStatus = chkconfig_flag_state_tuples_init(nullptr, lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.1.0. Ensure that passing a zero count argument to
+    //        chkconfig_flag_state_tuples_init returns -EINVAL.
+
+    lFlagStateTuplesCount = 0;
+
+    lStatus = chkconfig_flag_state_tuples_init(&lFlagStateTuples, lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.2.0. Ensure that passing a null tuples argument to
+    //        chkconfig_flag_state_tuples_destroy returns -EINVAL.
+
+    lFlagStateTuplesCount = 1;
+
+    lStatus = chkconfig_flag_state_tuples_destroy(nullptr, lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.3.0. Ensure that passing a zero count argument to
+    //        chkconfig_flag_state_tuples_destroy returns -EINVAL.
+
+    lFlagStateTuples      = new chkconfig_flag_state_tuple_t;
+    NL_TEST_ASSERT(inSuite, lFlagStateTuples != nullptr);
+
+    lFlagStateTuplesCount = 0;
+
+    lStatus = chkconfig_flag_state_tuples_destroy(lFlagStateTuples, lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    delete lFlagStateTuples;
+
+    // 2.0. Positive Tests
+
+    // 2.0.0. Ensure that passing a valid pointer and size to
+    //        chkconfig_flag_state_tuples_init succeeds and yields a non-null
+    //        result.
+
+    lFlagStateTuples      = nullptr;
+    lFlagStateTuplesCount = 7;
+
+    lStatus = chkconfig_flag_state_tuples_init(&lFlagStateTuples, lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lFlagStateTuples != nullptr);
+
+    // 2.0.0. Ensure that passing a valid pointer and size to
+    //        chkconfig_flag_state_tuples_destroy succeeds and yields a
+    //        non-null result.
+
+    lStatus = chkconfig_flag_state_tuples_destroy(lFlagStateTuples, lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
@@ -252,6 +321,7 @@ static void TestUtilityState(nlTestSuite *inSuite, void *inContext __attribute__
 static const nlTest sTests[] = {
     NL_TEST_DEF("Utility (State)",               TestUtilityState),
     NL_TEST_DEF("Utility (Origin)",              TestUtilityOrigin),
+    NL_TEST_DEF("Utility (Tuples Lifetime)",     TestUtilityTuplesLifetime),
 
     NL_TEST_SENTINEL()
 };
