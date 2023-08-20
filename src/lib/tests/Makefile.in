@@ -641,7 +641,6 @@ EXTRA_DIST = \
 @CHKCONFIG_BUILD_TESTS_TRUE@    $(top_builddir)/src/lib/libchkconfig.la        \
 @CHKCONFIG_BUILD_TESTS_TRUE@    $(NULL)
 
-
 # The additional environment variables and their values that will be
 # made available to all programs and scripts in TESTS.
 @CHKCONFIG_BUILD_TESTS_TRUE@TESTS_ENVIRONMENT = \

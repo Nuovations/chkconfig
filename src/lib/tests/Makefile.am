@@ -88,8 +88,8 @@ test_libchkconfig_LDADD                          = $(COMMON_LDADD)
 # Foreign make dependencies
 #
 
-NLFOREIGN_SUBDIR_DEPENDENCIES                         = \
-   $(NLUNIT_TEST_FOREIGN_SUBDIR_DEPENDENCY)             \
+NLFOREIGN_SUBDIR_DEPENDENCIES                    = \
+   $(NLUNIT_TEST_FOREIGN_SUBDIR_DEPENDENCY)        \
    $(NULL)
 
 if CHKCONFIG_BUILD_COVERAGE
