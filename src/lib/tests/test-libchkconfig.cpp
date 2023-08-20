@@ -509,7 +509,7 @@ static void TestOptionsLifetimeManagement(nlTestSuite *inSuite, void *inContext 
 }
 
 /*
- * Options Mutation     
+ * Options Mutation
  */
 static void TestOptionsMutation(nlTestSuite *inSuite, void *inContext)
 {
