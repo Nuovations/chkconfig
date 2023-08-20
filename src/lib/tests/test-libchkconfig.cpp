@@ -384,6 +384,58 @@ static void TestUtilityTuplesCompare(nlTestSuite *inSuite, void *inContext __att
     NL_TEST_ASSERT(inSuite, lComparison > 0);
 }
 
+/*
+ * Context Lifetime Management
+ */
+static void TestContextLifetimeManagement(nlTestSuite *inSuite, void *inContext __attribute__((unused)))
+{
+    chkconfig_status_t          lStatus;
+    chkconfig_context_pointer_t lContextPointer;
+
+    // 1.0. Negative Tests
+
+    // 1.0.0. Ensure that passing a null argument to chkconfig_init
+    //        returns -EINVAL.
+
+    lStatus = chkconfig_init(nullptr);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.1.0. Ensure that passing a null argument to chkconfig_destroy
+    //        returns -EINVAL.
+
+    lStatus = chkconfig_destroy(nullptr);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.1.1. Ensure that passing a null value to chkconfig_destroy
+    //        returns -EINVAL.
+
+    lContextPointer = nullptr;
+
+    lStatus = chkconfig_destroy(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // MARK: 2.0. Positive Tests
+
+    // 2.0.0. Ensure that passing a valid pointer to chkconfig_init
+    //        succeeds and yields a non-null result.
+
+    lStatus = chkconfig_init(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lContextPointer != nullptr);
+
+    // 2.1.0. Ensure that passing a valid pointer to chkconfig_destroy
+    //        succeeds and yields a non-null result.
+
+    lStatus = chkconfig_destroy(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // Test Finalization
+
+    lStatus = chkconfig_init(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lContextPointer != nullptr);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
@@ -393,6 +445,7 @@ static const nlTest sTests[] = {
     NL_TEST_DEF("Utility (Origin)",              TestUtilityOrigin),
     NL_TEST_DEF("Utility (Tuples Lifetime)",     TestUtilityTuplesLifetime),
     NL_TEST_DEF("Utility (Tuples Compare)",      TestUtilityTuplesCompare),
+    NL_TEST_DEF("Context Lifetime Management",   TestContextLifetimeManagement),
 
     NL_TEST_SENTINEL()
 };
