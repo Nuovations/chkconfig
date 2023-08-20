@@ -152,11 +152,105 @@ static void TestUtilityOrigin(nlTestSuite *inSuite, void *inContext __attribute_
     NL_TEST_ASSERT(inSuite, lLength > 0);
 }
 
+/*
+ * Utility (State)
+ */
+static void TestUtilityState(nlTestSuite *inSuite, void *inContext __attribute__((unused)))
+{
+    static const char * const kOffString = "off";
+    static const char * const kOnString= "on";
+    chkconfig_state_t         lState;
+    const char *              lStateString;
+    chkconfig_status_t        lStatus;
+    int                       lComparison;
+
+    // 1.0. Negative Tests
+
+    // 1.0.0. Ensure that passing a null string argument to
+    //        chkconfig_state_string_get_state returns -EINVAL.
+
+    lStatus = chkconfig_state_string_get_state(nullptr, &lState);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.1.0. Ensure that passing a null state argument to
+    //        chkconfig_state_string_get_state returns -EINVAL.
+
+    lStateString = kOffString;
+
+    lStatus = chkconfig_state_string_get_state(lStateString, nullptr);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.2.0. Ensure that passing a null string argument to
+    //        chkconfig_state_get_state_string returns -EINVAL.
+
+    lState = true;
+
+    lStatus = chkconfig_state_get_state_string(lState, nullptr);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.3.0. Ensure that passing an invalid state string to
+    //        chkconfig_state_string_get_state returns -EINVAL.
+
+    lStateString = "invalid";
+
+    lStatus = chkconfig_state_string_get_state(lStateString, &lState);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 2.0. Positive Tests
+
+    // 2.0.0. Ensure that passing "on" to
+    //        chkconfig_state_string_get_state returns success and
+    //        yields an asserted ('true') state.
+
+    lStateString = kOnString;
+
+    lStatus = chkconfig_state_string_get_state(lStateString, &lState);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lState == true);
+
+    // 2.1.0. Ensure that passing "off" to
+    //        chkconfig_state_string_get_state returns success and
+    //        yields a deasserted ('false') state.
+
+    lStateString = kOffString;
+
+    lStatus = chkconfig_state_string_get_state(lStateString, &lState);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lState == false);
+
+    // 2.2.0. Ensure that passing an asserted ('true') state to
+    //        chkconfig_state_get_state_string returns success and
+    //        yields the "on" string.
+
+    lState = true;
+
+    lStatus = chkconfig_state_get_state_string(lState, &lStateString);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lStateString != nullptr);
+
+    lComparison = strcmp(lStateString, kOnString);
+    NL_TEST_ASSERT(inSuite, lComparison == 0);
+
+    // 2.3.0. Ensure that passing a deasserted ('false') state to
+    //        chkconfig_state_get_state_string returns success and
+    //        yields the "off" string.
+
+    lState = false;
+
+    lStatus = chkconfig_state_get_state_string(lState, &lStateString);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lStateString != nullptr);
+
+    lComparison = strcmp(lStateString, kOffString);
+    NL_TEST_ASSERT(inSuite, lComparison == 0);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
  */
 static const nlTest sTests[] = {
+    NL_TEST_DEF("Utility (State)",               TestUtilityState),
     NL_TEST_DEF("Utility (Origin)",              TestUtilityOrigin),
 
     NL_TEST_SENTINEL()
