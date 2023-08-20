@@ -314,6 +314,76 @@ static void TestUtilityTuplesLifetime(nlTestSuite *inSuite, void *inContext __at
     NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
 }
 
+/*
+ * Utility (Tuples Compare)
+ */
+static void TestUtilityTuplesCompare(nlTestSuite *inSuite, void *inContext __attribute__((unused)))
+{
+    static constexpr chkconfig_flag_state_tuple_t kTupleFirst  = { "a", true,  CHKCONFIG_ORIGIN_UNKNOWN };
+    static constexpr chkconfig_flag_state_tuple_t kTupleSecond = { "a", false, CHKCONFIG_ORIGIN_UNKNOWN };
+    static constexpr chkconfig_flag_state_tuple_t kTupleThird  = { "b", true,  CHKCONFIG_ORIGIN_UNKNOWN };
+    int                                           lComparison;
+
+    // 1.0. Compare by flag.
+
+    // 1.1. Ensure the first example compares by flag equal to the
+    //      second example.
+
+    lComparison = chkconfig_flag_state_tuple_flag_compare_function(&kTupleFirst,
+                                                                   &kTupleSecond);
+    NL_TEST_ASSERT(inSuite, lComparison == 0);
+
+    // 1.2. Ensure the first example compares by flag less than the
+    //      third example.
+
+    lComparison = chkconfig_flag_state_tuple_flag_compare_function(&kTupleFirst,
+                                                                   &kTupleThird);
+    NL_TEST_ASSERT(inSuite, lComparison < 0);
+
+    // 1.3. Ensure the third example compares by flag greater than the
+    //      first example.
+
+    lComparison = chkconfig_flag_state_tuple_flag_compare_function(&kTupleThird,
+                                                                   &kTupleFirst);
+    NL_TEST_ASSERT(inSuite, lComparison > 0);
+
+    // 1.4. Ensure the third example compares by flag equal to itself.
+
+    lComparison = chkconfig_flag_state_tuple_flag_compare_function(&kTupleThird,
+                                                                   &kTupleThird);
+    NL_TEST_ASSERT(inSuite, lComparison == 0);
+
+    // 2.0. Compare by state.
+
+    // 2.1. Ensure the first example compares by state equal to
+    //      itself.
+
+    lComparison = chkconfig_flag_state_tuple_state_compare_function(&kTupleFirst,
+                                                                    &kTupleFirst);
+    NL_TEST_ASSERT(inSuite, lComparison == 0);
+
+    // 2.2. Ensure the first example compares by state less than the
+    //      second example.
+
+    lComparison = chkconfig_flag_state_tuple_state_compare_function(&kTupleFirst,
+                                                                    &kTupleSecond);
+    NL_TEST_ASSERT(inSuite, lComparison < 0);
+
+    // 2.3. Ensure the first example compares by state less than the
+    //      third example.
+
+    lComparison = chkconfig_flag_state_tuple_state_compare_function(&kTupleFirst,
+                                                                    &kTupleThird);
+    NL_TEST_ASSERT(inSuite, lComparison < 0);
+
+    // 2.3. Ensure the second example compares by state greater than the
+    //      third example.
+
+    lComparison = chkconfig_flag_state_tuple_state_compare_function(&kTupleSecond,
+                                                                    &kTupleThird);
+    NL_TEST_ASSERT(inSuite, lComparison > 0);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
@@ -322,6 +392,7 @@ static const nlTest sTests[] = {
     NL_TEST_DEF("Utility (State)",               TestUtilityState),
     NL_TEST_DEF("Utility (Origin)",              TestUtilityOrigin),
     NL_TEST_DEF("Utility (Tuples Lifetime)",     TestUtilityTuplesLifetime),
+    NL_TEST_DEF("Utility (Tuples Compare)",      TestUtilityTuplesCompare),
 
     NL_TEST_SENTINEL()
 };
