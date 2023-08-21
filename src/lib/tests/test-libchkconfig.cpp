@@ -508,6 +508,139 @@ static void TestOptionsLifetimeManagement(nlTestSuite *inSuite, void *inContext 
     NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
 }
 
+/*
+ * Options Mutation
+ */
+static void TestOptionsMutation(nlTestSuite *inSuite, void *inContext)
+{
+    TestContext *               lTestContext = static_cast<TestContext *>(inContext);
+    chkconfig_status_t          lStatus;
+    chkconfig_context_pointer_t lContextPointer;
+    chkconfig_options_pointer_t lOptionsPointer;
+    chkconfig_option_t          lOption;
+
+    // Test Initialization
+
+    lStatus = chkconfig_init(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lContextPointer != nullptr);
+
+    lStatus = chkconfig_options_init(lContextPointer, &lOptionsPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOptionsPointer != nullptr);
+
+    // 1.0. Negative Tests
+
+    lOption = CHKCONFIG_OPTION_FORCE_STATE;
+
+    // 1.0.0. Ensure that passing a null context pointer argument to
+    //        chkconfig_options_set returns -EINVAL.
+
+    lStatus = chkconfig_options_set(nullptr,
+                                    lOptionsPointer,
+                                    lOption,
+                                    true);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.0.1. Ensure that passing a null options pointer argument to
+    //        chkconfig_options_set returns -EINVAL.
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    nullptr,
+                                    lOption,
+                                    true);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.0.2. Ensure that passing an invalid option to
+    //        chkconfig_options_set returns -EINVAL.
+
+    lOption = _CHKCONFIG_OPTION_ENCODE(_CHKCONFIG_OPTION_TYPE_BOOLEAN, 0),
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    true);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 2.0. Positive Tests
+
+    // 2.0.0. Ensure that CHKCONFIG_OPTION_STATE_DIRECTORY can be
+    //        successfully set.
+
+    lOption = CHKCONFIG_OPTION_STATE_DIRECTORY;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    &lTestContext->mStateDirectory[0]);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 2.0.1. Ensure that CHKCONFIG_OPTION_FORCE_STATE can be
+    //        successfully.
+
+    lOption = CHKCONFIG_OPTION_FORCE_STATE;
+
+    // 2.0.1.0. Ensure that CHKCONFIG_OPTION_FORCE_STATE can be
+    //          successfully set to true.
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    true);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 2.0.1.1. Ensure that CHKCONFIG_OPTION_FORCE_STATE can be
+    //          successfully set to false.
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    false);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 2.0.2. Ensure that CHKCONFIG_OPTION_DEFAULT_DIRECTORY can be
+    //        successfully set.
+
+    lOption = CHKCONFIG_OPTION_DEFAULT_DIRECTORY;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    &lTestContext->mDefaultDirectory[0]);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 2.0.3. Ensure that CHKCONFIG_OPTION_USE_DEFAULT_DIRECTORY can be
+    //        successfully.
+
+    lOption = CHKCONFIG_OPTION_USE_DEFAULT_DIRECTORY;
+
+    // 2.0.3.0. Ensure that CHKCONFIG_OPTION_USE_DEFAULT_DIRECTORY can
+    //          be successfully set to true.
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    true);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 2.0.3.1. Ensure that CHKCONFIG_OPTION_USE_DEFAULT_DIRECTORY can
+    //          be successfully set to false.
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    false);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // Test Finalization
+
+    lStatus = chkconfig_options_destroy(lContextPointer, &lOptionsPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    lStatus = chkconfig_destroy(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
@@ -519,6 +652,7 @@ static const nlTest sTests[] = {
     NL_TEST_DEF("Utility (Tuples Compare)",      TestUtilityTuplesCompare),
     NL_TEST_DEF("Context Lifetime Management",   TestContextLifetimeManagement),
     NL_TEST_DEF("Options Lifetime Management",   TestOptionsLifetimeManagement),
+    NL_TEST_DEF("Options Mutation",              TestOptionsMutation),
 
     NL_TEST_SENTINEL()
 };
