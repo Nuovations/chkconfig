@@ -1525,6 +1525,146 @@ static void TestFlagObservationWithDefaults(nlTestSuite *inSuite, void *inContex
     NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
 }
 
+/*
+ * Flag Mutation
+ */
+static void TestFlagMutation(nlTestSuite *inSuite,
+                             TestContext &inTestContext,
+                             const bool &inForceState)
+{
+    static const char * const                  kFlagFirst   = "test-a";
+    static const char * const                  kFlagSecond  = "test-b";
+    static const char * const                  kFlagThird   = "test-c";
+    static const chkconfig_flag_state_tuple_t  kExpectedFlagStateTuples_2_0_1[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_STATE },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_STATE },
+        { kFlagThird,  true,  CHKCONFIG_ORIGIN_STATE }
+    };
+    static const char                          kNullFlag[1] = { '\0' };
+    chkconfig_status_t                         lStatus;
+    chkconfig_context_pointer_t                lContextPointer = nullptr;
+    chkconfig_options_pointer_t                lOptionsPointer = nullptr;
+    chkconfig_option_t                         lOption;
+    chkconfig_state_t                          lState;
+    chkconfig_flag_state_tuple_t *             lFlagStateTuples;
+    size_t                                     lFlagStateTuplesCount;
+
+    // Test Initialization
+
+    lStatus = chkconfig_init(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lContextPointer != nullptr);
+
+    lStatus = chkconfig_options_init(lContextPointer, &lOptionsPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOptionsPointer != nullptr);
+
+    lOption = CHKCONFIG_OPTION_STATE_DIRECTORY;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    &inTestContext.mStateDirectory[0]);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    lOption = CHKCONFIG_OPTION_FORCE_STATE;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    inForceState);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 1.0. Negative Tests
+
+    // 1.0.0.0. Ensure that passing a null context pointer argument to
+    //          chkconfig_state_set returns -EINVAL.
+
+    lState = true;
+
+    lStatus = chkconfig_state_set(nullptr,
+                                  kFlagFirst,
+                                  lState);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.0.0.1. Ensure that passing a null context pointer argument to
+    //          chkconfig_state_get_multiple returns -EINVAL.
+
+    lFlagStateTuples      = new chkconfig_flag_state_tuple_t;
+    NL_TEST_ASSERT(inSuite, lFlagStateTuples != nullptr);
+
+    lFlagStateTuplesCount = 1;
+
+    lStatus = chkconfig_state_set_multiple(nullptr,
+                                           lFlagStateTuples,
+                                           lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    delete lFlagStateTuples;
+
+    // 1.0.0.2. Ensure that passing a null flag argument to
+    //          chkconfig_state_set returns -EINVAL.
+
+    lStatus = chkconfig_state_set(lContextPointer,
+                                  nullptr,
+                                  lState);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.0.0.3. Ensure that passing a null flag value to
+    //          chkconfig_state_set returns -EINVAL.
+
+    lStatus = chkconfig_state_set(lContextPointer,
+                                  kNullFlag,
+                                  lState);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 1.0.0.4. Ensure that passing a null tuples argument to
+    //          chkconfig_state_set_multiple returns -EINVAL.
+
+    lFlagStateTuplesCount = 1;
+
+    lStatus = chkconfig_state_get_multiple(lContextPointer,
+                                           nullptr,
+                                           lFlagStateTuplesCount);
+    NL_TEST_ASSERT(inSuite, lStatus == -EINVAL);
+
+    // 2.0. Positive Tests
+
+    // 2.0.0. Set one flag.
+
+    lStatus = chkconfig_state_set(lContextPointer,
+                                  kFlagFirst,
+                                  true);
+    NL_TEST_ASSERT(inSuite, lStatus == -ENOENT);
+
+    // 2.0.1. Set multiple flags.
+
+    lStatus = chkconfig_state_set_multiple(lContextPointer,
+                                           &kExpectedFlagStateTuples_2_0_1[0],
+                                           ElementsOf(kExpectedFlagStateTuples_2_0_1));
+    NL_TEST_ASSERT(inSuite, lStatus == -ENOENT);
+
+    // Test Finalization
+
+    lStatus = chkconfig_options_destroy(lContextPointer, &lOptionsPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    lStatus = chkconfig_destroy(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+}
+
+/*
+ * Flag Mutation w/o Force
+ */
+static void TestFlagMutationWithoutForce(nlTestSuite *inSuite, void *inContext)
+{
+    static const bool lForceState = true;
+    TestContext *     lTestContext = static_cast<TestContext *>(inContext);
+
+    TestFlagMutation(inSuite, *lTestContext, !lForceState);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
@@ -1539,6 +1679,7 @@ static const nlTest sTests[] = {
     NL_TEST_DEF("Options Mutation",              TestOptionsMutation),
     NL_TEST_DEF("Flag Observation w/o Defaults", TestFlagObservationWithoutDefaults),
     NL_TEST_DEF("Flag Observation w/ Defaults",  TestFlagObservationWithDefaults),
+    NL_TEST_DEF("Flag Mutation w/o Force",       TestFlagMutationWithoutForce),
 
     NL_TEST_SENTINEL()
 };
