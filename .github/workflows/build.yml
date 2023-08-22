@@ -54,7 +54,7 @@ jobs:
         sudo apt-get -y install asciidoc xmlto doxygen
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.5.3
 
     - name: Bootstrap and Configure
       run: |
@@ -71,6 +71,11 @@ jobs:
     - name: Test
       run: |
         make -j check
+    - uses: actions/upload-artifact@v3
+      if: ${{ failure() }}
+      with:
+        name: test-libchkconfig-log
+        path: src/lib/tests/test-libchkconfig.log
 
     - name: Upload Coverage Reports to Codecov.io
       run: |
@@ -94,7 +99,7 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.5.3
 
     - name: Install Dependencies
       run: |
