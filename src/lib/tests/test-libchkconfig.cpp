@@ -1308,6 +1308,223 @@ static void TestFlagObservationWithoutDefaults(nlTestSuite *inSuite, void *inCon
     NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
 }
 
+/*
+ * Flag Observation w/ Defaults
+ */
+static void TestFlagObservationWithDefaults(nlTestSuite *inSuite, void *inContext)
+{
+    static const char * const                     kFlagFirst   = "test-a";
+    static const char * const                     kFlagSecond  = "test-b";
+    static const char * const                     kFlagThird   = "test-c";
+    static const char * const                     kFlagFourth  = "test-d";
+    static const char * const                     kFlagFifth   = "test-e";
+    static const chkconfig_flag_state_tuple_t     kInputFlagStateTuples_2_0_1[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_DEFAULT }
+    };
+    static const chkconfig_flag_state_tuple_t     kExpectedFlagStateTuples_2_0_1[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_DEFAULT }
+    };
+    static const chkconfig_flag_state_tuple_t     kInputFlagStateTuples_2_0_2[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_STATE },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_STATE }
+    };
+    static const chkconfig_flag_state_tuple_t     kExpectedFlagStateTuples_2_0_2[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_STATE },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_STATE }
+    };
+    static const chkconfig_flag_state_tuple_t     kInputFlagStateTuples_2_0_3[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagThird,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagFourth, false, CHKCONFIG_ORIGIN_STATE   },
+        { kFlagFifth,  true,  CHKCONFIG_ORIGIN_STATE   }
+    };
+    static const chkconfig_flag_state_tuple_t     kExpectedFlagStateTuples_2_0_3[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagThird,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagFourth, false, CHKCONFIG_ORIGIN_STATE   },
+        { kFlagFifth,  true,  CHKCONFIG_ORIGIN_STATE   }
+    };
+    static const chkconfig_flag_state_tuple_t     kInputFlagStateTuples_2_0_4[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagThird,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, true,  CHKCONFIG_ORIGIN_STATE   },
+        { kFlagThird,  false, CHKCONFIG_ORIGIN_STATE   }
+    };
+    static const chkconfig_flag_state_tuple_t     kExpectedFlagStateTuples_2_0_4[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, true,  CHKCONFIG_ORIGIN_STATE   },
+        { kFlagThird,  false, CHKCONFIG_ORIGIN_STATE   }
+    };
+    static const chkconfig_flag_state_tuple_t     kInputFlagStateTuples_2_0_5[] =
+    {
+        { kFlagFirst,  true,  CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagSecond, false, CHKCONFIG_ORIGIN_DEFAULT },
+        { kFlagFirst,  false, CHKCONFIG_ORIGIN_STATE   },
+        { kFlagSecond, true,  CHKCONFIG_ORIGIN_STATE   },
+        { kFlagThird,  false, CHKCONFIG_ORIGIN_STATE   }
+    };
+    static const chkconfig_flag_state_tuple_t     kExpectedFlagStateTuples_2_0_5[] =
+    {
+        { kFlagFirst,  false, CHKCONFIG_ORIGIN_STATE   },
+        { kFlagSecond, true,  CHKCONFIG_ORIGIN_STATE   },
+        { kFlagThird,  false, CHKCONFIG_ORIGIN_STATE   }
+    };
+    TestContext *                                 lTestContext = static_cast<TestContext *>(inContext);
+    chkconfig_status_t                            lStatus;
+    chkconfig_context_pointer_t                   lContextPointer;
+    chkconfig_options_pointer_t                   lOptionsPointer;
+    chkconfig_option_t                            lOption;
+    const chkconfig_flag_state_tuple_t *          lInputFlagStateTupleFirst;
+    const chkconfig_flag_state_tuple_t *          lInputFlagStateTupleLast;
+    const chkconfig_flag_state_tuple_t *          lExpectedFlagStateTupleFirst;
+    const chkconfig_flag_state_tuple_t *          lExpectedFlagStateTupleLast;
+
+    // Test Initialization
+
+    lStatus = chkconfig_init(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lContextPointer != nullptr);
+
+    lStatus = chkconfig_options_init(lContextPointer, &lOptionsPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+    NL_TEST_ASSERT(inSuite, lOptionsPointer != nullptr);
+
+    lOption = CHKCONFIG_OPTION_STATE_DIRECTORY;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    &lTestContext->mStateDirectory[0]);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    lOption = CHKCONFIG_OPTION_DEFAULT_DIRECTORY;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    &lTestContext->mDefaultDirectory[0]);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    lOption = CHKCONFIG_OPTION_USE_DEFAULT_DIRECTORY;
+
+    lStatus = chkconfig_options_set(lContextPointer,
+                                    lOptionsPointer,
+                                    lOption,
+                                    true);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    // 1.0. Negative Tests
+
+    TestNegativeFlagObservation(inSuite, lContextPointer);
+
+    // 2.0. Positive Tests
+
+    // 2.0.0. With zero (0) backing store flags.
+
+    TestFlagObservationWithoutBackingStoreFlags(inSuite, lContextPointer);
+
+    // 2.0.1. With two (2) default and zero (0) state backing store
+    //        flags.
+
+    lInputFlagStateTupleFirst    = &kInputFlagStateTuples_2_0_1[0];
+    lInputFlagStateTupleLast     = lInputFlagStateTupleFirst + ElementsOf(kInputFlagStateTuples_2_0_1);
+    lExpectedFlagStateTupleFirst = &kExpectedFlagStateTuples_2_0_1[0];
+    lExpectedFlagStateTupleLast  = lExpectedFlagStateTupleFirst + ElementsOf(kExpectedFlagStateTuples_2_0_1);
+
+    TestFlagObservationWithBackingStoreFlags(inSuite,
+                                             *lTestContext,
+                                             lContextPointer,
+                                             lInputFlagStateTupleFirst,
+                                             lInputFlagStateTupleLast,
+                                             lExpectedFlagStateTupleFirst,
+                                             lExpectedFlagStateTupleLast);
+
+    // 2.0.2. With zero (0) default and two (2) state backing store
+    //        flags.
+
+    lInputFlagStateTupleFirst    = &kInputFlagStateTuples_2_0_2[0];
+    lInputFlagStateTupleLast     = lInputFlagStateTupleFirst + ElementsOf(kInputFlagStateTuples_2_0_2);
+    lExpectedFlagStateTupleFirst = &kExpectedFlagStateTuples_2_0_2[0];
+    lExpectedFlagStateTupleLast  = lExpectedFlagStateTupleFirst + ElementsOf(kExpectedFlagStateTuples_2_0_2);
+
+    TestFlagObservationWithBackingStoreFlags(inSuite,
+                                             *lTestContext,
+                                             lContextPointer,
+                                             lInputFlagStateTupleFirst,
+                                             lInputFlagStateTupleLast,
+                                             lExpectedFlagStateTupleFirst,
+                                             lExpectedFlagStateTupleLast);
+
+    // 2.0.3. With three (3) default and two (2) non-overlapping state
+    //        backing store flags.
+
+    lInputFlagStateTupleFirst    = &kInputFlagStateTuples_2_0_3[0];
+    lInputFlagStateTupleLast     = lInputFlagStateTupleFirst + ElementsOf(kInputFlagStateTuples_2_0_3);
+    lExpectedFlagStateTupleFirst = &kExpectedFlagStateTuples_2_0_3[0];
+    lExpectedFlagStateTupleLast  = lExpectedFlagStateTupleFirst + ElementsOf(kExpectedFlagStateTuples_2_0_3);
+
+    TestFlagObservationWithBackingStoreFlags(inSuite,
+                                             *lTestContext,
+                                             lContextPointer,
+                                             lInputFlagStateTupleFirst,
+                                             lInputFlagStateTupleLast,
+                                             lExpectedFlagStateTupleFirst,
+                                             lExpectedFlagStateTupleLast);
+
+    // 2.0.4. With three (3) default and two (2) overlapping state
+    //        backing store flags.
+
+    lInputFlagStateTupleFirst    = &kInputFlagStateTuples_2_0_4[0];
+    lInputFlagStateTupleLast     = lInputFlagStateTupleFirst + ElementsOf(kInputFlagStateTuples_2_0_4);
+    lExpectedFlagStateTupleFirst = &kExpectedFlagStateTuples_2_0_4[0];
+    lExpectedFlagStateTupleLast  = lExpectedFlagStateTupleFirst + ElementsOf(kExpectedFlagStateTuples_2_0_4);
+
+    TestFlagObservationWithBackingStoreFlags(inSuite,
+                                             *lTestContext,
+                                             lContextPointer,
+                                             lInputFlagStateTupleFirst,
+                                             lInputFlagStateTupleLast,
+                                             lExpectedFlagStateTupleFirst,
+                                             lExpectedFlagStateTupleLast);
+
+    // 2.0.5. With two (2) default and three (3) overlapping state
+    //        backing store flags.
+
+    lInputFlagStateTupleFirst    = &kInputFlagStateTuples_2_0_5[0];
+    lInputFlagStateTupleLast     = lInputFlagStateTupleFirst + ElementsOf(kInputFlagStateTuples_2_0_5);
+    lExpectedFlagStateTupleFirst = &kExpectedFlagStateTuples_2_0_5[0];
+    lExpectedFlagStateTupleLast  = lExpectedFlagStateTupleFirst + ElementsOf(kExpectedFlagStateTuples_2_0_5);
+
+    TestFlagObservationWithBackingStoreFlags(inSuite,
+                                             *lTestContext,
+                                             lContextPointer,
+                                             lInputFlagStateTupleFirst,
+                                             lInputFlagStateTupleLast,
+                                             lExpectedFlagStateTupleFirst,
+                                             lExpectedFlagStateTupleLast);
+
+    // Test Finalization
+
+    lStatus = chkconfig_options_destroy(lContextPointer, &lOptionsPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+
+    lStatus = chkconfig_destroy(&lContextPointer);
+    NL_TEST_ASSERT(inSuite, lStatus == CHKCONFIG_STATUS_SUCCESS);
+}
+
 /**
  *  Test Suite. It lists all the test functions.
  *
@@ -1321,6 +1538,7 @@ static const nlTest sTests[] = {
     NL_TEST_DEF("Options Lifetime Management",   TestOptionsLifetimeManagement),
     NL_TEST_DEF("Options Mutation",              TestOptionsMutation),
     NL_TEST_DEF("Flag Observation w/o Defaults", TestFlagObservationWithoutDefaults),
+    NL_TEST_DEF("Flag Observation w/ Defaults",  TestFlagObservationWithDefaults),
 
     NL_TEST_SENTINEL()
 };
