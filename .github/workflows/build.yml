@@ -79,7 +79,7 @@ jobs:
 
     - name: Upload Coverage Reports to Codecov.io
       run: |
-        bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -g 'src/lib/*' -G 'src/lib/tests/*'
+        bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -g '*third_party/**' -g '*src/lib/tests/**' -g '*src/chkconfig/tests/**'
 
   macos:
     runs-on: macos-latest
@@ -124,4 +124,4 @@ jobs:
 
     - name: Upload Coverage Reports to Codecov.io
       run: |
-        bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -g 'src/lib/*' -G 'src/lib/tests/*'
+        bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} -g '*third_party/**' -g '*src/lib/tests/**' -g '*src/chkconfig/tests/**'
