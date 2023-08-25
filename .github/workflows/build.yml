@@ -51,7 +51,7 @@ jobs:
 
     - name: Install chkconfig Package Dependencies
       run: |
-        sudo apt-get -y install asciidoc doxygen genhtml lcov xmlto
+        sudo apt-get -y install asciidoc doxygen lcov xmlto
 
     - name: Checkout
       uses: actions/checkout@v3.5.3
@@ -103,7 +103,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install autoconf automake genhtml lcov libtool asciidoc doxygen xmlto
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install autoconf automake lcov libtool asciidoc doxygen xmlto
 
     - name: Bootstrap and Configure
       run: |
