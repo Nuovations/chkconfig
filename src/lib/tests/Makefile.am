@@ -113,7 +113,7 @@ INCLUDE_PATHS                                   := $(subst -I,,$(sort $(NLASSERT
 INCLUDE_PATTERNS                                := $(if $(INCLUDE_PATHS),$(addsuffix *,$(INCLUDE_PATHS)),)
 
 $(CHKCONFIG_COVERAGE_INFO): check | $(CHKCONFIG_COVERAGE_BUNDLE)
-	$(call generate-coverage-report,${top_builddir}/src/lib,${top_builddir}/src/lib/tests ${INCLUDE_PATTERNS})
+	$(call generate-coverage-report,${top_builddir}/src/lib,*lib/tests* ${INCLUDE_PATTERNS})
 
 coverage: $(CHKCONFIG_COVERAGE_INFO)
 
