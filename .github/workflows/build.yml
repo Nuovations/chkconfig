@@ -70,7 +70,7 @@ jobs:
 
     - name: Test
       run: |
-        make -j check
+        make -j coverage
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:
@@ -120,7 +120,12 @@ jobs:
 
     - name: Test
       run: |
-        make -j check
+        make -j coverage
+    - uses: actions/upload-artifact@v3
+      if: ${{ failure() }}
+      with:
+        name: test-libchkconfig-log
+        path: src/lib/tests/test-libchkconfig.log
 
     - name: Upload Coverage Reports to Codecov.io
       run: |
